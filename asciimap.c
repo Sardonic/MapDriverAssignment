@@ -1,5 +1,8 @@
 #include "asciimap.h"
 
+static char* initials = "SBDJJS";
+static int num_initials = 6;
+
 static driver_status_t status =
 {
 	false, /* Busy-ness */
@@ -64,10 +67,17 @@ static ssize_t device_read(file, buffer, length, offset)
     loff_t*      offset;  /* Our offset in the file */
 {
 	int bytes_read = 0;
+	int string_index = 0;
 
 	while (length > 0)
 	{
-		put_user('a', buffer++);
+		/* Reading from the static buffer from now for testing */
+		if (string_index >= STATIC_BSIZE)
+		{
+			break;
+		}
+
+		put_user(status.string[string_index++], buffer++);
 		bytes_read++;
 		length--;
 	}
@@ -101,6 +111,8 @@ static ssize_t device_write(file, buffer, length, offset)
 int
 init_module(void)
 {
+	int i,
+	    j;
 	/* Register the character device (atleast try) */
 	status.major = register_chrdev
 	(
@@ -108,6 +120,15 @@ init_module(void)
 		DEVICE_NAME,
 		&Fops
 	);
+
+	for (i = 0; i < STATIC_BSIZE_SQRT; i++)
+	{
+		for (j = 0; j < STATIC_BSIZE_SQRT; j++)
+		{
+			char ch = initials[(STATIC_BSIZE_SQRT * i + j) % num_initials];
+			status.string[STATIC_BSIZE_SQRT * i + j] = ch;
+		}
+	}
 
 	/* Negative values signify an error */
 	if(status.major < 0)
@@ -123,7 +144,8 @@ init_module(void)
 
 	printk
 	(
-		"********** MKNOD MSG BEGIN **********\nRegisteration of asciimap.ko is a success. The major device number is %d.\n",
+		"\n********** MKNOD MSG BEGIN **********\n" \
+		"Registeration of asciimap.ko is a success. The major device number is %d.\n",
 		status.major
 	);
 
