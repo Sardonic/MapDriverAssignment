@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/types.h>
@@ -12,6 +13,7 @@ int main(int argc, char* argv[])
 {
 	int fid;
 	char buffer[BUFFSIZE];
+	size_t bytes_read;
 
 	fid = open("/dev/asciimap", O_RDONLY);
 
@@ -19,11 +21,23 @@ int main(int argc, char* argv[])
 	{
 		fprintf(stderr, "Failed to open /dev/asciimap\n");
 		perror(NULL);
+		exit(1);
 	}
 
-	read(fid, buffer, BUFFSIZE);
+	bytes_read = read(fid, buffer, BUFFSIZE - 1); /* Save space for NULL */
 
-	fprintf(stdout, "%s\n", buffer, BUFFSIZE);
+	if (bytes_read == -1)
+	{
+		fprintf(stderr, "Failed to read from file\n");
+		perror(NULL);
+		exit(1);
+	}
+	else
+	{
+		buffer[bytes_read] = '\0';
+	}
+
+	printf("%s\n", buffer);
 
 	return 0;
 }
