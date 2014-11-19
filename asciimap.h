@@ -40,7 +40,7 @@
 /* Storing this by hand. Inelegant, I know... */
 #define BSIZE 6400
 
-#define STATIC_ROWSIZE 50
+#define STATIC_ROWSIZE 51
 #define STATIC_COLSIZE 51 /* save space for \n at the end */
 #define STATIC_BSIZE (STATIC_COLSIZE * STATIC_ROWSIZE)
 

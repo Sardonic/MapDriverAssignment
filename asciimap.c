@@ -126,7 +126,7 @@ init_module(void)
 	 * and arithmetic going on here. */
 	for (i = 0; i < STATIC_ROWSIZE; i++)
 	{
-		for (j = 0; j < STATIC_COLSIZE - 1; j++)
+		for (j = 0; j < STATIC_COLSIZE; j++)
 		{
 			char ch = initials[(STATIC_ROWSIZE * i + j) % num_initials];
 			status.string[STATIC_ROWSIZE * i + j] = ch;
