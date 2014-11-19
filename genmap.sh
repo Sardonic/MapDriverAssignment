@@ -4,8 +4,8 @@ MAP_WIDTH=50
 MAP_HEIGHT=50
 
 function genPseudoRandomASCII {
-    local RAND_CHAR=$[RANDOM % 94 + 32] # generate int between 32 and 126 (good ascii chars)
-    RAND_CHAR=$(printf \\$(printf '%03o' $((RAND_CHAR)))) # make it a char
+    # get chars from urandom, suppress error output and pipe to base64 to get rid of escape chars
+    local RAND_CHAR=$(dd if=/dev/urandom bs=1 count=1 2> /dev/null | base64)
     echo $RAND_CHAR
 }
 
