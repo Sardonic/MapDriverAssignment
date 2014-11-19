@@ -65,19 +65,23 @@ static ssize_t device_read(file, buffer, length, offset)
     loff_t*      offset;  /* Our offset in the file */
 {
 	int bytes_read = 0;
-	char* ch = status.buf;
 
 	while (length > 0)
 	{
-		if (*ch == '\0')
+		if (*status.buf_ptr == '\0')
 		{
 			break;
 		}
 
-		put_user(*ch++, buffer++);
+		put_user(*status.buf_ptr++, buffer++);
 		bytes_read++;
 		length--;
 	}
+
+	/* Don't add null terminator! That's not my job! */
+	/* Add null terminator */
+	/* put_user('\0', buffer);
+	bytes_read++; */
 
 #ifdef _DEBUG
 	printk
@@ -140,10 +144,11 @@ init_module(void)
 		char* dst = status.buf;
 		while ((*dst++ = *src++)) {bytes_copied++;}
 
-		/* Throw an exra char at the end for testing */
-		*--dst = '\\';
-		*++dst = '\0';
+		status.width = STATIC_COLSIZE;
+		status.height = STATIC_ROWSIZE;
 	}
+
+	status.buf_ptr = status.buf;
 	
 	/* Negative values signify an error */
 	if(status.major < 0)

@@ -59,11 +59,15 @@ typedef struct _driver_status
 	 */
 	bool  busy;
 
-	/* The message the device will give when asked */
+	/* The actual map data */
 	char  buf[BSIZE];
 
 	/* Original map data */
 	char string[STATIC_BSIZE];
+
+	/* Map size */
+	int width;
+	int height;
 
 	/* How far did the process reading the message
 	 * get? Useful if the message is larger than the size
