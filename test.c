@@ -9,11 +9,30 @@
 
 extern int errno;
 
+static void readAndPrintBuffer(int fid, char* buffer, int numChar)
+{
+	size_t bytes_read;
+
+	bytes_read = read(fid, buffer, numChar);
+	if (bytes_read == -1)
+	{
+		fprintf(stderr, "Failed to read from file\n");
+		perror(NULL);
+		exit(1);
+	}
+
+	buffer[bytes_read] = '\0';
+	printf("Read %d bytes\n", bytes_read);
+	printf("12345678901234567890123456789012345678901234567890\n");
+	printf("         1         2         3         4         5\n");
+
+	printf("%s\n", buffer);
+}
+
 int main(int argc, char* argv[])
 {
 	int fid;
 	char buffer[BUFFSIZE];
-	size_t bytes_read;
 
 	fid = open("/dev/asciimap", O_RDONLY);
 
@@ -25,42 +44,34 @@ int main(int argc, char* argv[])
 	}
 
 	/* Doing 2 reads, now */
-	{
-		bytes_read = read(fid, buffer, 20); /* Save space for NULL */
-
-		if (bytes_read == -1)
-		{
-			fprintf(stderr, "Failed to read from file\n");
-			perror(NULL);
-			exit(1);
-		}
-
-		buffer[bytes_read] = '\0';
-		printf("Read %d bytes\n", bytes_read);
-		printf("12345678901234567890123456789012345678901234567890\n");
-		printf("         1         2         3         4         5\n");
-
-		printf("%s\n", buffer);
-	}
+	readAndPrintBuffer(fid, buffer, 20);
 
 	printf("\n\nReading again...\n");
 
+	readAndPrintBuffer(fid, buffer, 20);
+
+	/* Now close it, reopen it, and try reading again */
+
+	printf("Closing...\n");
+	close(fid);
+
+	printf("Re-opening...\n");
+	fid = open("/dev/asciimap", O_RDONLY);
+
+	if (fid == -1)
 	{
-		bytes_read = read(fid, buffer, 20);
-		if (bytes_read == -1)
-		{
-			fprintf(stderr, "Failed to read from file\n");
-			perror(NULL);
-			exit(1);
-		}
-
-		buffer[bytes_read] = '\0';
-		printf("Read %d bytes\n", bytes_read);
-		printf("12345678901234567890123456789012345678901234567890\n");
-		printf("         1         2         3         4         5\n");
-
-		printf("%s\n", buffer);
+		fprintf(stderr, "Failed to open /dev/asciimap\n");
+		perror(NULL);
+		exit(1);
 	}
+
+	readAndPrintBuffer(fid, buffer, 20);
+
+	printf("\n\nReading again...\n");
+
+	readAndPrintBuffer(fid, buffer, 20);
+
+	close(fid);
 
 	return 0;
 }

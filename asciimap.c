@@ -17,8 +17,6 @@ static int device_open(inode, file)
 	struct inode* inode;
 	struct file* file;
 {
-	/* Uhh... Not sure what I need to do here, yet... */
-
 	status.minor = inode->i_rdev >> 8;
 	status.minor = inode->i_rdev & 0xFF;
 
@@ -35,6 +33,9 @@ static int device_open(inode, file)
 		return -EBUSY;
 
 	status.busy = true;
+
+	printk("Opened. Resetting buf_ptr.\n");
+	status.buf_ptr = status.buf;
 
 	return SUCCESS;
 }
@@ -112,8 +113,6 @@ static ssize_t device_write(file, buffer, length, offset)
 int
 init_module(void)
 {
-	int i,
-	    j;
 	/* Register the character device (atleast try) */
 	status.major = register_chrdev
 	(
@@ -122,23 +121,28 @@ init_module(void)
 		&Fops
 	);
 
-	/* This is kinda unsafe... Have some seriously strange names
-	 * and arithmetic going on here. */
-	for (i = 0; i < STATIC_ROWSIZE; i++)
+	/* Fill our array with initials, sequentially. */
 	{
-		for (j = 0; j < STATIC_COLSIZE - 1; j++)
+		int i,
+		    j;
+
+		for (i = 0; i < STATIC_ROWSIZE; i++)
 		{
-			char ch = initials[(STATIC_COLSIZE * i + j) % num_initials];
-			status.string[STATIC_COLSIZE * i + j] = ch;
+			for (j = 0; j < STATIC_COLSIZE - 1; j++)
+			{
+				char ch = initials[(STATIC_COLSIZE * i + j) % num_initials];
+				status.string[STATIC_COLSIZE * i + j] = ch;
+			}
+			status.string[STATIC_COLSIZE * i + j] = '\n';
 		}
-		status.string[STATIC_COLSIZE * i + j] = '\n';
 	}
 
+	/* This line assumes the string is filled completely with
+	 * useful information, except for the last character. */
 	status.string[STATIC_BSIZE - 1] = '\0';
 
 	/* Have to use our own memcpy. Ho-hum. */
 	{
-		int i;
 		int bytes_copied = 0;
 		const char* src = status.string;
 		char* dst = status.buf;
