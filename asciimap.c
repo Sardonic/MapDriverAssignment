@@ -36,8 +36,6 @@ static int device_open(inode, file)
 
 	status.busy = true;
 
-	/* printf("Hey, you're totally reading from me! Good job!\n"); */
-
 	return SUCCESS;
 }
 
@@ -72,13 +70,13 @@ static ssize_t device_read(file, buffer, length, offset)
 	while (length > 0)
 	{
 		/* Reading from the static buffer for now for testing */
-		if (string_index >= STATIC_BSIZE)
+		if (string_index >= BSIZE)
 		{
 			/* Maybe loop back instead of bailing out? I dunno. */
 			break;
 		}
 
-		put_user(status.string[string_index++], buffer++);
+		put_user(status.buf[string_index++], buffer++);
 		bytes_read++;
 		length--;
 	}
@@ -133,6 +131,19 @@ init_module(void)
 		}
 		status.string[STATIC_COLSIZE * i + j] = '\n';
 	}
+
+	/* Have to use our own memcpy. Ho-hum. */
+	{
+		char* src = status.string;
+		char* dst = status.buf;
+		while ((*dst++ = *src++)) {}
+		*--dst = '\\';
+		/* Throw an exra char at the end for testing */
+		*++dst = '\0';
+	}
+	
+	/* memcpy(status.buf, status.string, STATIC_BSIZE); */
+
 
 	/* Negative values signify an error */
 	if(status.major < 0)
