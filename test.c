@@ -35,6 +35,8 @@ int main(int argc, char* argv[])
 
 	buffer[bytes_read] = '\0';
 	printf("Read %d bytes\n", bytes_read);
+	printf("12345678901234567890123456789012345678901234567890\n");
+	printf("         1         2         3         4         5\n");
 
 	printf("%s\n", buffer);
 

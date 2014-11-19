@@ -126,12 +126,12 @@ init_module(void)
 	 * and arithmetic going on here. */
 	for (i = 0; i < STATIC_ROWSIZE; i++)
 	{
-		for (j = 0; j < STATIC_COLSIZE; j++)
+		for (j = 0; j < STATIC_COLSIZE - 1; j++)
 		{
-			char ch = initials[(STATIC_ROWSIZE * i + j) % num_initials];
-			status.string[STATIC_ROWSIZE * i + j] = ch;
+			char ch = initials[(STATIC_COLSIZE * i + j) % num_initials];
+			status.string[STATIC_COLSIZE * i + j] = ch;
 		}
-		status.string[STATIC_ROWSIZE * i + STATIC_COLSIZE - 1] = '\n';
+		status.string[STATIC_COLSIZE * i + j] = '\n';
 	}
 
 	/* Negative values signify an error */
