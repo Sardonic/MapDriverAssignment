@@ -33,7 +33,7 @@ rebuild:
 	sudo rm /dev/asciimap
 	make all
 	make register
-	mknod /dev/asciimap c 248 0 #Hardcoded major number?!? Tisk, tisk!!
+	eval `dmesg | grep mknod | tail -1`
 	
 retest:
 	make rebuild

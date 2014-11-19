@@ -158,7 +158,7 @@ init_module(void)
 		"If you want to talk to the device driver,\n" \
 		"you'll have to create a device file. \n" \
 		"We suggest you use:\n\n" \
-		"mknod %s c %d <minor>\n\n" \
+		"mknod %s c %d 0\n\n" \
 		"You can try different minor numbers and see what happens.\n",
 		DEVICE_NAME,
 		status.major
