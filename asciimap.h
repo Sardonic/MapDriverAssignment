@@ -40,8 +40,9 @@
 /* Storing this by hand. Inelegant, I know... */
 #define BSIZE 6400
 
-#define STATIC_BSIZE_SQRT 50
-#define STATIC_BSIZE 2500
+#define STATIC_ROWSIZE 50
+#define STATIC_COLSIZE 51 /* save space for \n at the end */
+#define STATIC_BSIZE (STATIC_COLSIZE * STATIC_ROWSIZE)
 
 /* The name for our device, as it will appear
  * in /proc/devices

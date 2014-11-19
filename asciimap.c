@@ -71,9 +71,10 @@ static ssize_t device_read(file, buffer, length, offset)
 
 	while (length > 0)
 	{
-		/* Reading from the static buffer from now for testing */
+		/* Reading from the static buffer for now for testing */
 		if (string_index >= STATIC_BSIZE)
 		{
+			/* Maybe loop back instead of bailing out? I dunno. */
 			break;
 		}
 
@@ -121,13 +122,16 @@ init_module(void)
 		&Fops
 	);
 
-	for (i = 0; i < STATIC_BSIZE_SQRT; i++)
+	/* This is kinda unsafe... Have some seriously strange names
+	 * and arithmetic going on here. */
+	for (i = 0; i < STATIC_ROWSIZE; i++)
 	{
-		for (j = 0; j < STATIC_BSIZE_SQRT; j++)
+		for (j = 0; j < STATIC_COLSIZE - 1; j++)
 		{
-			char ch = initials[(STATIC_BSIZE_SQRT * i + j) % num_initials];
-			status.string[STATIC_BSIZE_SQRT * i + j] = ch;
+			char ch = initials[(STATIC_ROWSIZE * i + j) % num_initials];
+			status.string[STATIC_ROWSIZE * i + j] = ch;
 		}
+		status.string[STATIC_ROWSIZE * i + STATIC_COLSIZE - 1] = '\n';
 	}
 
 	/* Negative values signify an error */

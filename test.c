@@ -32,11 +32,9 @@ int main(int argc, char* argv[])
 		perror(NULL);
 		exit(1);
 	}
-	else
-	{
-		buffer[bytes_read] = '\0';
-		printf("Read %d bytes\n", bytes_read);
-	}
+
+	buffer[bytes_read] = '\0';
+	printf("Read %d bytes\n", bytes_read);
 
 	printf("%s\n", buffer);
 
