@@ -24,21 +24,43 @@ int main(int argc, char* argv[])
 		exit(1);
 	}
 
-	bytes_read = read(fid, buffer, BUFFSIZE - 1); /* Save space for NULL */
-
-	if (bytes_read == -1)
+	/* Doing 2 reads, now */
 	{
-		fprintf(stderr, "Failed to read from file\n");
-		perror(NULL);
-		exit(1);
+		bytes_read = read(fid, buffer, 20); /* Save space for NULL */
+
+		if (bytes_read == -1)
+		{
+			fprintf(stderr, "Failed to read from file\n");
+			perror(NULL);
+			exit(1);
+		}
+
+		buffer[bytes_read] = '\0';
+		printf("Read %d bytes\n", bytes_read);
+		printf("12345678901234567890123456789012345678901234567890\n");
+		printf("         1         2         3         4         5\n");
+
+		printf("%s\n", buffer);
 	}
 
-	buffer[bytes_read] = '\0';
-	printf("Read %d bytes\n", bytes_read);
-	printf("12345678901234567890123456789012345678901234567890\n");
-	printf("         1         2         3         4         5\n");
+	printf("\n\nReading again...\n");
 
-	printf("%s\n", buffer);
+	{
+		bytes_read = read(fid, buffer, 20);
+		if (bytes_read == -1)
+		{
+			fprintf(stderr, "Failed to read from file\n");
+			perror(NULL);
+			exit(1);
+		}
+
+		buffer[bytes_read] = '\0';
+		printf("Read %d bytes\n", bytes_read);
+		printf("12345678901234567890123456789012345678901234567890\n");
+		printf("         1         2         3         4         5\n");
+
+		printf("%s\n", buffer);
+	}
 
 	return 0;
 }
