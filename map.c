@@ -65,7 +65,7 @@ static ssize_t device_read(file, buffer, length, offset)
 {
 	int bytes_read = 0;
 
-	if (length > 0)
+	while (length > 0)
 	{
 		put_user('a', buffer++);
 		bytes_read++;

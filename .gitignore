@@ -1,0 +1,9 @@
+.map.ko.cmd
+.map.ko.unsigned.cmd
+.map.mod.o.cmd
+.map.o.cmd
+.tmp_versions/
+Module.symvers
+map.ko.unsigned
+map.mod.c
+map.mod.o
