@@ -1,4 +1,4 @@
-#include "map.h"
+#include "asciimap.h"
 
 static driver_status_t status =
 {
@@ -123,7 +123,7 @@ init_module(void)
 
 	printk
 	(
-		"********** MKNOD MSG BEGIN **********\nRegisteration of map.ko is a success. The major device number is %d.\n",
+		"********** MKNOD MSG BEGIN **********\nRegisteration of asciimap.ko is a success. The major device number is %d.\n",
 		status.major
 	);
 

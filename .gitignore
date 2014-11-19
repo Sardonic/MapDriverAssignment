@@ -7,3 +7,11 @@ Module.symvers
 map.ko.unsigned
 map.mod.c
 map.mod.o
+.asciimap.ko.cmd
+.asciimap.ko.unsigned.cmd
+.asciimap.mod.o.cmd
+.asciimap.o.cmd
+asciimap.ko.unsigned
+asciimap.mod.c
+asciimap.mod.o
+asciimap.o
