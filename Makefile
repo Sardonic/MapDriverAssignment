@@ -9,8 +9,8 @@ CC_OPTIONS=-O1 $(WARNINGS) $(ISO) $(DEBUG) $(DEFINE)
 # Where to look for header files
 INC=-I. -I/usr/include -I/usr/src/kernels/`uname -r`/include
 
-DRIVER=map.o
-MODULE=map.ko
+DRIVER=asciimap.o
+MODULE=asciimap.ko
 
 obj-m += $(DRIVER)
 
@@ -25,9 +25,9 @@ clean:
 register: $(DRIVER)
 	insmod ./$(MODULE)
 	modinfo $(MODULE)
-	lsmod | grep map
+	lsmod | grep asciimap
 
 clean-all:
 	make clean
-	rmmod map
+	rmmod asciimap
 	lsmod
