@@ -21,6 +21,11 @@ all:
 	cd $(DIR)
 	@echo "Woo! You compiled a driver!!"
 
+build:
+	make all
+	make register
+	eval `dmesg | grep mknod | tail -1`
+
 clean:
 	rm -f $(DRIVER)
 	DIR=$(PWD)

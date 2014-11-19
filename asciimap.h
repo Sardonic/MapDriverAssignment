@@ -42,7 +42,7 @@
 
 #define STATIC_ROWSIZE 50
 #define STATIC_COLSIZE 51 /* save space for \n at the end */
-#define STATIC_BSIZE (STATIC_COLSIZE * STATIC_ROWSIZE)
+#define STATIC_BSIZE ((STATIC_COLSIZE * STATIC_ROWSIZE) + 1) /* save space for \0 at the end */
 
 /* The name for our device, as it will appear
  * in /proc/devices

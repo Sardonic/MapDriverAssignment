@@ -65,18 +65,16 @@ static ssize_t device_read(file, buffer, length, offset)
     loff_t*      offset;  /* Our offset in the file */
 {
 	int bytes_read = 0;
-	int string_index = 0;
+	char* ch = status.buf;
 
 	while (length > 0)
 	{
-		/* Reading from the static buffer for now for testing */
-		if (string_index >= BSIZE)
+		if (*ch == '\0')
 		{
-			/* Maybe loop back instead of bailing out? I dunno. */
 			break;
 		}
 
-		put_user(status.buf[string_index++], buffer++);
+		put_user(*ch++, buffer++);
 		bytes_read++;
 		length--;
 	}
@@ -132,19 +130,21 @@ init_module(void)
 		status.string[STATIC_COLSIZE * i + j] = '\n';
 	}
 
+	status.string[STATIC_BSIZE - 1] = '\0';
+
 	/* Have to use our own memcpy. Ho-hum. */
 	{
-		char* src = status.string;
+		int i;
+		int bytes_copied = 0;
+		const char* src = status.string;
 		char* dst = status.buf;
-		while ((*dst++ = *src++)) {}
-		*--dst = '\\';
+		while ((*dst++ = *src++)) {bytes_copied++;}
+
 		/* Throw an exra char at the end for testing */
+		*--dst = '\\';
 		*++dst = '\0';
 	}
 	
-	/* memcpy(status.buf, status.string, STATIC_BSIZE); */
-
-
 	/* Negative values signify an error */
 	if(status.major < 0)
 	{
