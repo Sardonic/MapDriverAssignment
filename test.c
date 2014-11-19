@@ -5,7 +5,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#define BUFFSIZE 512
+#define BUFFSIZE 4096
 
 extern int errno;
 
@@ -32,10 +32,11 @@ int main(int argc, char* argv[])
 		perror(NULL);
 		exit(1);
 	}
-	else
-	{
-		buffer[bytes_read] = '\0';
-	}
+
+	buffer[bytes_read] = '\0';
+	printf("Read %d bytes\n", bytes_read);
+	printf("12345678901234567890123456789012345678901234567890\n");
+	printf("         1         2         3         4         5\n");
 
 	printf("%s\n", buffer);
 

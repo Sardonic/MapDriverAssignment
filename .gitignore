@@ -15,3 +15,4 @@ asciimap.ko.unsigned
 asciimap.mod.c
 asciimap.mod.o
 asciimap.o
+test
