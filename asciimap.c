@@ -97,10 +97,6 @@ static ssize_t device_write(file, buffer, length, offset)
 	loff_t*      offset;  /* Our offset in the file */
 {
 	int bytes_written = 0;
-<<<<<<< HEAD
-=======
-	char* old_loc = status.buf_ptr;
->>>>>>> 4213c56b207aba3733a0fea64cc8bbacbbeb50aa
 
 	while (length > 0 && status.buf_ptr - status.buf < BSIZE - 1) /* saving room for \0 */
 	{
@@ -123,14 +119,8 @@ static ssize_t device_write(file, buffer, length, offset)
 		*(status.buf_ptr + 1) = '\0';
 	}
 
-	/* Sneak this in here for testing */
-	status.buf_ptr = old_loc;
-
-<<<<<<< HEAD
-=======
 	printk("The length of the map is now %d bytes\n", status.map_byte_length);
 
->>>>>>> 4213c56b207aba3733a0fea64cc8bbacbbeb50aa
 	return bytes_written;
 }
 
