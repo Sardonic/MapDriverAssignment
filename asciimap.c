@@ -12,9 +12,10 @@ static int  mem_copy(char* dst, const char* src)
 	{
 		while ((*dst++ = *src++))
 		{
-			/* Keep byte length consistent. Ignore '\0' */
 			count++;
 		}
+
+		/* We copied a '\0' too, but the loop body didn't run */
 		count++;
 	}
 	return count;
@@ -82,10 +83,20 @@ static ssize_t device_read(file, buffer, length, offset)
     loff_t*      offset;  /* Our offset in the file */
 {
 	int bytes_read = 0;
+	int err = 0;
 
 	while (length > 0 && *status.buf_ptr)
 	{
-		put_user(*status.buf_ptr++, buffer++);
+		err = put_user(*status.buf_ptr++, buffer++);
+
+		if (err == -EFAULT)
+		{
+#ifdef _DEBUG
+			printk("asciimap::device_read() - Hit error %d\n");
+#endif
+			return err;
+		}
+
 		bytes_read++;
 		length--;
 	}
@@ -112,11 +123,20 @@ static ssize_t device_write(file, buffer, length, offset)
 	loff_t*      offset;  /* Our offset in the file */
 {
 	int bytes_written = 0;
+	int err = 0;
 
 	while (length > 0 && status.buf_ptr - status.buf < BSIZE - 1) /* saving room for \0 */
 	{
 		/* get_user is the weirdest macro ever. */
-		get_user(*status.buf_ptr, buffer);
+		err = get_user(*status.buf_ptr, buffer);
+
+		if (err == -EFAULT)
+		{
+#ifdef _DEBUG
+			printk("asciimap::device_write() - Hit error %d\n", err);
+#endif
+			return err;
+		}
 
 		status.buf_ptr++;
 		buffer++;
@@ -134,7 +154,16 @@ static ssize_t device_write(file, buffer, length, offset)
 		*(status.buf_ptr + 1) = '\0';
 	}
 
-	printk("The length of the map is now %d bytes\n", status.map_byte_length);
+#ifdef _DEBUG
+	printk
+	(
+		"asciimap::device_write() - Read %d bytes.\n" \
+		"Map is now %d bytes long\n",
+		bytes_written,
+		status.map_byte_length
+	);
+	/* printk("The length of the map is now %d bytes\n", status.map_byte_length); */
+#endif
 
 	return bytes_written;
 }
