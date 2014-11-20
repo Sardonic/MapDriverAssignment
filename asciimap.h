@@ -29,7 +29,16 @@
 
 #include <asm/uaccess.h>  /* for put/get_user */
 
+/* For input output control */
+#define MAJOR_NUM 	248
+#include <linux/ioctl.h>
+#define IOCTL_RESET_MAP 	_IOR(MAJOR_NUM, 0, char *) /*reset to the default map*/
+#define IOCTL_ZERO_OUT		_IOR(MAJOR_NUM, 1, char *) /*zeros out the buffer with
+							    * reseting the lengths and the pointer*/
+#define IOCTL_CHECK_CONSISTENCY _IOR(MAJOR_NUM, 2, char *) /*checks that consistency*/
+
 /* Return codes */
+
 #define SUCCESS      0
 
 
@@ -92,7 +101,7 @@ static int  device_release(struct inode*, struct file*);
 static ssize_t device_read(struct file*, char*, size_t, loff_t*);
 static ssize_t device_write(struct file*, const char*, size_t, loff_t*);
 static loff_t device_seek(struct file *, loff_t, int);
-
+static int device_ioctl(struct inode*, struct file*, unsigned int, unsigned int);
 /* Kernel module-related */
 
 /* Module Declarations ***************************** */
@@ -112,7 +121,7 @@ struct file_operations Fops =
 	device_write,
 	NULL,   /* readdir */
 	NULL,   /* poll/select */
-	NULL,   /* ioctl */
+	device_ioctl,   /* ioctl */
 	NULL,   /* mmap */
 	device_open,
 	NULL,   /* flush */

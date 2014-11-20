@@ -5,6 +5,21 @@ extern int errno;
 static char* initials = "SBDJJS";
 static int num_initials = 6;
 
+static int  mem_copy(char* dst, const char* src)
+{
+	int count = 0;
+	/* Have to use our own memcpy. Ho-hum. */
+	{
+		while ((*dst++ = *src++))
+		{
+			/* Keep byte length consistent. Ignore '\0' */
+			count++;
+		}
+		count++;
+	}
+	return count;
+
+}
 static driver_status_t status =
 {
 	false, /* Busy-ness */
@@ -164,6 +179,33 @@ static loff_t device_seek(struct file* file, loff_t offset, int whence)
 	return SUCCESS;
 }
 
+/* this function is called when a process tries to do an 
+ * ioctl on our devive */
+static int device_ioctl(inode, file, ioctl_num, ioctl_param)
+	struct inode* inode;
+	struct file* file;
+	unsigned int ioctl_num; /* number and param for ioctl  */
+	unsigned int ioctl_param;
+{
+	int i;
+	char *temp;
+	char ch;
+
+	switch	(ioctl_num)
+	{
+	case IOCTL_RESET_MAP:
+		
+		break;
+	case IOCTL_ZERO_OUT:
+		break;
+	case IOCTL_CHECK_CONSISTENCY:
+		break;
+	default:
+		break;
+	}	
+	
+	return SUCCESS;
+}
 /* Initialize the module - Register the character device */
 int
 init_module(void)
@@ -197,16 +239,7 @@ init_module(void)
 	status.string[STATIC_BSIZE - 1] = '\0';
 
 	/* Have to use our own memcpy. Ho-hum. */
-	{
-		const char* src = status.string;
-		char* dst = status.buf;
-		/* Copy the data */
-		while ((*dst++ = *src++))
-		{
-			/* Keep byte length consistent. Ignore '\0' */
-			status.map_byte_length++;
-		}
-	}
+	status.map_byte_length = mem_copy(status.buf, status.string) - 1;
 
 	status.buf_ptr = status.buf;
 	
