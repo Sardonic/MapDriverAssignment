@@ -16,120 +16,20 @@
 #define _MAP_DEVICE_H
 
 
-/* The necessary header files */
 
-/* Standard in kernel modules */
-#include <linux/kernel.h>   /* We're doing kernel work */
-#include <linux/module.h>   /* Specifically, a module */
-
-/* For character devices */
-#include <linux/fs.h>       /* The character device
-                             * definitions are here
-                             */
-
-#include <asm/uaccess.h>  /* for put/get_user */
+#include <linux/ioctl.h> /* for ioctl defs */
 
 /* For input output control */
-#define MAJOR_NUM 	248
-#include <linux/ioctl.h>
-#define IOCTL_RESET_MAP 	_IOR(MAJOR_NUM, 0, char *) /*reset to the default map*/
-#define IOCTL_ZERO_OUT		_IOR(MAJOR_NUM, 1, char *) /*zeros out the buffer with
+#define MAJOR_NUM 	130
+#define IOCTL_RESET_MAP 	_IO(MAJOR_NUM, 0) /*reset to the default map*/
+#define IOCTL_ZERO_OUT		_IO(MAJOR_NUM, 1) /*zeros out the buffer with
 							    * reseting the lengths and the pointer*/
-#define IOCTL_CHECK_CONSISTENCY _IOR(MAJOR_NUM, 2, char *) /*checks that consistency*/
-
-/* Return codes */
-
-#define SUCCESS      0
-
-
-/* Device Declarations **************************** */
-
-/* The maximum length of the message from the device */
-/* #define DRV_BUF_SIZE 80 */
-/* Storing this by hand. Inelegant, I know... */
-#define BSIZE 6400
-
-#define STATIC_ROWSIZE 50
-#define STATIC_COLSIZE 51 /* save space for \n at the end */
-#define STATIC_BSIZE ((STATIC_COLSIZE * STATIC_ROWSIZE) + 1) /* save space for \0 at the end */
+#define IOCTL_CHECK_CONSISTENCY _IO(MAJOR_NUM, 2) /*checks that consistency*/
 
 /* The name for our device, as it will appear
  * in /proc/devices
  */
 #define DEVICE_NAME  "/dev/asciimap"
 
-/*
- * Driver status structure
- */
-typedef struct _driver_status
-{
-	/* Is the device open right now? Used to prevent
-	 * concurent access into the same device
-	 */
-	bool  busy;
-
-	/* The actual map data */
-	char  buf[BSIZE];
-
-	/* Original map data */
-	char string[STATIC_BSIZE];
-
-	/* Map size */
-	int map_byte_length;
-
-	/* How far did the process reading the message
-	 * get? Useful if the message is larger than the size
-	 * of the buffer we get to fill in device_read.
-	 */
-	char* buf_ptr;
-
-	/* The major device number for the device.
-	 */
-	int   major;
-
-	/* The minor device number for the device.
-	 */
-	int   minor;
-} driver_status_t;
-
-
-/*
- * Driver funcitons' prototypes
- */
-static int device_open(struct inode*, struct file*);
-static int  device_release(struct inode*, struct file*);
-static ssize_t device_read(struct file*, char*, size_t, loff_t*);
-static ssize_t device_write(struct file*, const char*, size_t, loff_t*);
-static loff_t device_seek(struct file *, loff_t, int);
-static int device_ioctl(struct inode*, struct file*, unsigned int, unsigned int);
-/* Kernel module-related */
-
-/* Module Declarations ***************************** */
-
-
-/* This structure will hold the functions to be
- * called when a process does something to the device
- * we created. Since a pointer to this structure is
- * kept in the devices table, it can't be local to
- * init_module. NULL is for unimplemented functions.
- */
-struct file_operations Fops =
-{
-	NULL,   /* owner */
-	device_seek,   /* seek */
-	device_read,
-	device_write,
-	NULL,   /* readdir */
-	NULL,   /* poll/select */
-	device_ioctl,   /* ioctl */
-	NULL,   /* mmap */
-	device_open,
-	NULL,   /* flush */
-	device_release  /* a.k.a. close */
-};
-
-
-int init_module(void);
-void cleanup_module(void);
 
 #endif /* _MAP_DEVICE_H */
