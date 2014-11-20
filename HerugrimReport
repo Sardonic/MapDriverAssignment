@@ -53,7 +53,8 @@ this script contain 50% or more non blank characters. If it generates a
 map that contains more than 50% blank characters, the script will re-run.
 It will execute up to ten times before it terminates and prints an error.
 
-The script pulls bytes from /dev/urandom to be used in the map.  
+The script pulls bytes from /dev/urandom to be used in the map,
+then pipes them into base64 to remove bad characters.
 
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 4.2 Driver
