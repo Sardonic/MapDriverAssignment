@@ -34,9 +34,6 @@ static int device_open(inode, file)
 
 	status.busy = true;
 
-	printk("Opened. Resetting buf_ptr.\n");
-	status.buf_ptr = status.buf;
-
 	return SUCCESS;
 }
 
@@ -67,22 +64,12 @@ static ssize_t device_read(file, buffer, length, offset)
 {
 	int bytes_read = 0;
 
-	while (length > 0)
+	while (length > 0 && *status.buf_ptr)
 	{
-		if (*status.buf_ptr == '\0')
-		{
-			break;
-		}
-
 		put_user(*status.buf_ptr++, buffer++);
 		bytes_read++;
 		length--;
 	}
-
-	/* Don't add null terminator! That's not my job! */
-	/* Add null terminator */
-	/* put_user('\0', buffer);
-	bytes_read++; */
 
 #ifdef _DEBUG
 	printk
@@ -143,10 +130,9 @@ init_module(void)
 
 	/* Have to use our own memcpy. Ho-hum. */
 	{
-		int bytes_copied = 0;
 		const char* src = status.string;
 		char* dst = status.buf;
-		while ((*dst++ = *src++)) {bytes_copied++;}
+		while ((*dst++ = *src++)) {}
 
 		status.width = STATIC_COLSIZE;
 		status.height = STATIC_ROWSIZE;
