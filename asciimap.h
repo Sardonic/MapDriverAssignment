@@ -92,6 +92,7 @@ static int device_open(struct inode*, struct file*);
 static int  device_release(struct inode*, struct file*);
 static ssize_t device_read(struct file*, char*, size_t, loff_t*);
 static ssize_t device_write(struct file*, const char*, size_t, loff_t*);
+static loff_t device_seek(struct file *, loff_t, int);
 
 /* Kernel module-related */
 
@@ -107,7 +108,7 @@ static ssize_t device_write(struct file*, const char*, size_t, loff_t*);
 struct file_operations Fops =
 {
 	NULL,   /* owner */
-	NULL,   /* seek */
+	device_seek,   /* seek */
 	device_read,
 	device_write,
 	NULL,   /* readdir */

@@ -4,6 +4,7 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <assert.h>
 
 #define BUFFSIZE 4096
 
@@ -29,19 +30,23 @@ static void readAndPrintBuffer(int fid, char* buffer, int numChar)
 	printf("%s\n", buffer);
 }
 
+#define ERROR_CHECK(x) \
+	if (x == -1) \
+	{ \
+		fprintf(stderr, "Failed to open /dev/asciimap\n"); \
+		perror(NULL); \
+		exit(1); \
+	}
+
 int main(int argc, char* argv[])
 {
 	int fid;
 	char buffer[BUFFSIZE];
+	int bytes_written;
 
 	fid = open("/dev/asciimap", O_RDONLY);
 
-	if (fid == -1)
-	{
-		fprintf(stderr, "Failed to open /dev/asciimap\n");
-		perror(NULL);
-		exit(1);
-	}
+	ERROR_CHECK(fid);
 
 	/* Doing 2 reads, now */
 	readAndPrintBuffer(fid, buffer, 20);
@@ -58,12 +63,7 @@ int main(int argc, char* argv[])
 	printf("Re-opening...\n");
 	fid = open("/dev/asciimap", O_RDONLY);
 
-	if (fid == -1)
-	{
-		fprintf(stderr, "Failed to open /dev/asciimap\n");
-		perror(NULL);
-		exit(1);
-	}
+	ERROR_CHECK(fid);
 
 	readAndPrintBuffer(fid, buffer, 20);
 
@@ -72,6 +72,32 @@ int main(int argc, char* argv[])
 	readAndPrintBuffer(fid, buffer, 20);
 
 	close(fid);
+
+	/* Open again and do some writing */
+
+	fid = open("/dev/asciimap", O_WRONLY);
+
+	ERROR_CHECK(fid);
+
+	{
+		assert(20 < BUFFSIZE);
+
+		int i;
+		for (i = 0; i < 20; i++)
+		{
+			buffer[i] = '0';
+		}
+	}
+
+	bytes_written = write(fid, buffer, 20);
+
+	printf("Wrote %d bytes\n", bytes_written);
+
+	close(fid);
+
+	fid = open("/dev/asciimap", O_RDONLY);
+
+	readAndPrintBuffer(fid, buffer, 25);
 
 	return 0;
 }

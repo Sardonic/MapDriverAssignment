@@ -8,6 +8,8 @@ static driver_status_t status =
 	false, /* Busy-ness */
 	{0}, /* Buffer */
 	{0}, /* Static string */
+	0, /* width */
+	0, /* height */
 	NULL, /* Buffer's pointer */
 	-1, /* major */
 	-1 /* minor */
@@ -92,9 +94,28 @@ static ssize_t device_write(file, buffer, length, offset)
 	size_t       length;  /* The length of the buffer */
 	loff_t*      offset;  /* Our offset in the file */
 {
-	return 0;
+	int bytes_written = 0;
+	char* oldLoc = status.buf_ptr;
+
+	while (length > 0 && bytes_written < BSIZE - 1) /* saving room for \0 */
+	{
+		get_user(*status.buf_ptr, buffer);
+		status.buf_ptr++;
+		buffer++;
+		bytes_written++;
+		length--;
+	}
+
+	/* Sneaking this in here for testing purposes... */
+	status.buf_ptr = oldLoc;
+
+	return bytes_written;
 }
 
+static loff_t device_seek(struct file* file, loff_t offset, int something)
+{
+	return 0;
+}
 
 /* Initialize the module - Register the character device */
 int

@@ -48,7 +48,7 @@ rebuild:
 	
 retest:
 	make rebuild
-	gcc test.c -o test
+	gcc -g test.c -o test
 	./test
 
 register: $(DRIVER)
