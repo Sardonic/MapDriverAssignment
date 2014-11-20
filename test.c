@@ -1,3 +1,5 @@
+#include "asciimap.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -6,7 +8,6 @@
 #include <sys/stat.h>
 #include <assert.h>
 #include <sys/ioctl.h>
-#include "asciimap.h"
 
 #define BUFFSIZE (4096 * 2)
 
@@ -45,6 +46,35 @@ int main(int argc, char* argv[])
 	int fid;
 	char buffer[BUFFSIZE];
 	int bytes_written;
+	int err;
+
+	fid = open("/dev/asciimap", O_RDWR);
+	ERROR_CHECK(fid);
+
+	ioctl(fid, IOCTL_RESET_MAP);
+
+	close(fid);
+	/*
+	{
+		//assert(20 < BUFFSIZE);
+
+		int i;
+		for (i = 0; i < BUFFSIZE; i++)
+		{
+			buffer[i] = '0';
+		}
+	}
+	bytes_written = write(fid, buffer, BUFFSIZE);
+	printf("Bytes written: %d\n", bytes_written);
+	
+	readAndPrintBuffer(fid, buffer, BUFFSIZE);
+	*/
+
+	/* lseek(fid, 0, SEEK_SET); */
+
+	/* readAndPrintBuffer(fid, buffer, BUFFSIZE); */
+
+#if 0
 
 	fid = open("/dev/asciimap", O_RDONLY);
 
@@ -105,14 +135,27 @@ int main(int argc, char* argv[])
 	close(fid);
 
 	char *msg = "Message passed by ioctl\n";
-	fid = open("/dev/asciimap", O_RDWR);
+	fid = open("/dev/asciimap", O_WRONLY);
 
-	ioctl(fid, IOCTL_RESET_MAP, msg);
-	readAndPrintBuffer(fid, buffer, BUFFSIZE);
-
-	ioctl(fid, IOCTL_ZERO_OUT, msg);
-	readAndPrintBuffer(fid, buffer, BUFFSIZE);
+	err = ioctl(fid, IOCTL_RESET_MAP);
+	if (err < 0)
+	{
+		perror("ioctl error");
+		close(fid);
+		exit(1);
+	}
 
 	close(fid);
+
+	fid = open("/dev/asciimap", O_WRONLY);
+	readAndPrintBuffer(fid, buffer, BUFFSIZE);
+
+	/*
+	ioctl(fid, IOCTL_ZERO_OUT, msg);
+	readAndPrintBuffer(fid, buffer, BUFFSIZE);
+	*/
+
+	close(fid);
+#endif
 	return 0;
 }

@@ -1,4 +1,124 @@
+/* The necessary header files */
+
+/* Standard in kernel modules */
+#include <linux/kernel.h>   /* We're doing kernel work */
+#include <linux/module.h>   /* Specifically, a module */
+
+/* For character devices */
+#include <linux/fs.h>       /* The character device
+                             * definitions are here
+                             */
+
+#include <asm/uaccess.h>  /* for put/get_user */
+
 #include "asciimap.h"
+
+/* Device Declarations **************************** */
+
+/* The maximum length of the message from the device */
+/* #define DRV_BUF_SIZE 80 */
+/* Storing this by hand. Inelegant, I know... */
+#define BSIZE 6400
+
+#define STATIC_ROWSIZE 50
+#define STATIC_COLSIZE 51 /* save space for \n at the end */
+#define STATIC_BSIZE ((STATIC_COLSIZE * STATIC_ROWSIZE) + 1) /* save space for \0 at the end */
+
+/* Return codes */
+
+#define SUCCESS      0
+
+
+/*
+ * Driver status structure
+ */
+typedef struct _driver_status
+{
+	/* Is the device open right now? Used to prevent
+	 * concurent access into the same device
+	 */
+	bool  busy;
+
+	/* The actual map data */
+	char  buf[BSIZE];
+
+	/* Original map data */
+	char string[STATIC_BSIZE];
+
+	/* Map size */
+	int map_byte_length;
+
+	/* How far did the process reading the message
+	 * get? Useful if the message is larger than the size
+	 * of the buffer we get to fill in device_read.
+	 */
+	char* buf_ptr;
+
+	/* The minor device number for the device.
+	 */
+	int   minor;
+} driver_status_t;
+
+
+static driver_status_t status =
+{
+	.busy = false, /* Busy-ness */
+	.buf = {0}, /* Buffer */
+	.string ={0}, /* Static string */
+	.map_byte_length = 0, /* width */
+	.buf_ptr = NULL, /* total length */
+	.minor = -1 /* minor */
+};
+
+/*
+ * Driver funcitons' prototypes
+ */
+static int device_open(struct inode*, struct file*);
+static int  device_release(struct inode*, struct file*);
+static ssize_t device_read(struct file*, char*, size_t, loff_t*);
+static ssize_t device_write(struct file*, const char*, size_t, loff_t*);
+static loff_t device_seek(struct file *, loff_t, int);
+static int device_ioctl(struct inode*, struct file*, unsigned int, unsigned int);
+/* Kernel module-related */
+
+/* Module Declarations ***************************** */
+
+/* This structure will hold the functions to be
+ * called when a process does something to the device
+ * we created. Since a pointer to this structure is
+ * kept in the devices table, it can't be local to
+ * init_module. NULL is for unimplemented functions.
+ */
+struct file_operations Fops =
+{
+	.read = device_read,
+	.write = device_write,
+	.llseek = device_seek,
+	.ioctl = device_ioctl,
+	.open = device_open,
+	.release = device_release
+#if 0
+	NULL,   /* owner */
+	device_seek,   /* seek */
+	device_read,
+	device_write,
+	NULL,   /* readdir */
+	NULL,   /* poll/select */
+	device_ioctl,   /* ioctl */
+	NULL,   /* mmap */
+	device_open,
+	NULL,   /* flush */
+	device_release  /* a.k.a. close */
+
+#endif
+};
+
+
+
+int init_module(void);
+void cleanup_module(void);
+
+
 
 extern int errno;
 
@@ -20,17 +140,7 @@ static int  mem_copy(char* dst, const char* src)
 	return count;
 
 }
-static driver_status_t status =
-{
-	false, /* Busy-ness */
-	{0}, /* Buffer */
-	{0}, /* Static string */
-	0, /* width */
-	0, /* total length */
-	NULL, /* Buffer's pointer */
-	-1, /* major */
-	-1 /* minor */
-};
+
 
 static int device_open(inode, file)
 	struct inode* inode;
@@ -41,8 +151,8 @@ static int device_open(inode, file)
 
 	printk
 	(
-		"Device: %d.%d, busy: %d\n",
-		status.major,
+		KERN_INFO "Device: %d.%d, busy: %d\n",
+		MAJOR_NUM,
 		status.minor,
 		status.busy
 	);
@@ -134,7 +244,7 @@ static ssize_t device_write(file, buffer, length, offset)
 		*(status.buf_ptr + 1) = '\0';
 	}
 
-	printk("The length of the map is now %d bytes\n", status.map_byte_length);
+	printk(KERN_INFO "The length of the map is now %d bytes\n", status.map_byte_length);
 
 	return bytes_written;
 }
@@ -191,18 +301,27 @@ static int device_ioctl(inode, file, ioctl_num, ioctl_param)
 	char *temp;
 	char ch;
 
+	printk(KERN_INFO "Received ioctl request\n");
+
 	switch	(ioctl_num)
 	{
 	case IOCTL_RESET_MAP:
 
-		temp = status.buf;
-		while(*temp)
+		for (i = 0; i < BSIZE; ++i)
+		{
+			status.buf[i] = '\0';
+		}
+		/* temp = status.buf; */
+		/* while(*temp) */
+		/*
 		{
 			*temp = "\0";
 			temp++;	
 		}	
+		*/
 
 		status.map_byte_length = mem_copy(status.buf, status.string) - 1;
+		printk(KERN_INFO "New map size: %d\n", status.map_byte_length);
 		status.buf_ptr = status.buf;
 		break;
 
@@ -229,13 +348,26 @@ static int device_ioctl(inode, file, ioctl_num, ioctl_param)
 int
 init_module(void)
 {
+	int err = 0;
 	/* Register the character device (atleast try) */
-	status.major = register_chrdev
+	err = register_chrdev
 	(
-		0,
+		MAJOR_NUM,
 		DEVICE_NAME,
 		&Fops
 	);
+	
+	/* Negative values signify an error */
+	if(err < 0)
+	{
+		printk
+		(
+			"Sorry, registering the ASCII device failed with %d\n",
+			err
+		);
+
+		return err;
+	}
 
 	/* Fill our array with initials, sequentially. */
 	{
@@ -261,24 +393,12 @@ init_module(void)
 	status.map_byte_length = mem_copy(status.buf, status.string) - 1;
 
 	status.buf_ptr = status.buf;
-	
-	/* Negative values signify an error */
-	if(status.major < 0)
-	{
-		printk
-		(
-			"Sorry, registering the ASCII device failed with %d\n",
-			status.major
-		);
-
-		return status.major;
-	}
 
 	printk
 	(
 		"\n********** MKNOD MSG BEGIN **********\n" \
 		"Registeration of asciimap.ko is a success. The major device number is %d.\n",
-		status.major
+		MAJOR_NUM
 	);
 
 	printk
@@ -289,7 +409,7 @@ init_module(void)
 		"mknod %s c %d 0\n\n" \
 		"You can try different minor numbers and see what happens.\n",
 		DEVICE_NAME,
-		status.major
+		MAJOR_NUM
 	);
 
 	return SUCCESS;
@@ -299,5 +419,6 @@ init_module(void)
 void
 cleanup_module(void)
 {
-	unregister_chrdev(status.major, DEVICE_NAME);
+	unregister_chrdev(MAJOR_NUM, DEVICE_NAME);
 }
+
