@@ -24,7 +24,7 @@ fi
 for((i=0; i<$MAP_HEIGHT; i++)) do
     for((j=0; j<$MAP_WIDTH; j++)) do
 	VAR=$(genPseudoRandomASCII)
-	printf "%c " $VAR
+	printf "%c" $VAR
     done
     printf '\n'
 done
