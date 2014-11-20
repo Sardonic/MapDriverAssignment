@@ -94,6 +94,8 @@ static ssize_t device_write(file, buffer, length, offset)
 	size_t       length;  /* The length of the buffer */
 	loff_t*      offset;  /* Our offset in the file */
 {
+	/* TODO: Test for width and height to see if we're adding to the map
+	 * or just overwritting existing data. */
 	int bytes_written = 0;
 	char* oldLoc = status.buf_ptr;
 

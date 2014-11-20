@@ -6,7 +6,7 @@
 #include <sys/stat.h>
 #include <assert.h>
 
-#define BUFFSIZE 4096
+#define BUFFSIZE (4096 * 2)
 
 extern int errno;
 
@@ -80,16 +80,16 @@ int main(int argc, char* argv[])
 	ERROR_CHECK(fid);
 
 	{
-		assert(20 < BUFFSIZE);
+		//assert(20 < BUFFSIZE);
 
 		int i;
-		for (i = 0; i < 20; i++)
+		for (i = 0; i < BUFFSIZE; i++)
 		{
 			buffer[i] = '0';
 		}
 	}
 
-	bytes_written = write(fid, buffer, 20);
+	bytes_written = write(fid, buffer, BUFFSIZE);
 
 	printf("Wrote %d bytes\n", bytes_written);
 
