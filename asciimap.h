@@ -66,8 +66,7 @@ typedef struct _driver_status
 	char string[STATIC_BSIZE];
 
 	/* Map size */
-	int width;
-	int height;
+	int map_byte_length;
 
 	/* How far did the process reading the message
 	 * get? Useful if the message is larger than the size

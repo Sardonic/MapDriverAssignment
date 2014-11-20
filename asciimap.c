@@ -11,7 +11,7 @@ static driver_status_t status =
 	{0}, /* Buffer */
 	{0}, /* Static string */
 	0, /* width */
-	0, /* height */
+	0, /* total length */
 	NULL, /* Buffer's pointer */
 	-1, /* major */
 	-1 /* minor */
@@ -96,21 +96,41 @@ static ssize_t device_write(file, buffer, length, offset)
 	size_t       length;  /* The length of the buffer */
 	loff_t*      offset;  /* Our offset in the file */
 {
-	/* TODO: Test for width and height to see if we're adding to the map
-	 * or just overwritting existing data. */
 	int bytes_written = 0;
+<<<<<<< HEAD
+=======
+	char* old_loc = status.buf_ptr;
+>>>>>>> 4213c56b207aba3733a0fea64cc8bbacbbeb50aa
 
 	while (length > 0 && status.buf_ptr - status.buf < BSIZE - 1) /* saving room for \0 */
 	{
+		/* get_user is the weirdest macro ever. */
 		get_user(*status.buf_ptr, buffer);
+
 		status.buf_ptr++;
 		buffer++;
 		bytes_written++;
 		length--;
+
+		if (status.buf_ptr - status.buf > status.map_byte_length)
+		{
+			status.map_byte_length++;
+		}
 	}
 
-	status.buf[BSIZE - 1] = '\0';
+	if (status.buf_ptr - status.buf == status.map_byte_length)
+	{
+		*(status.buf_ptr + 1) = '\0';
+	}
 
+	/* Sneak this in here for testing */
+	status.buf_ptr = old_loc;
+
+<<<<<<< HEAD
+=======
+	printk("The length of the map is now %d bytes\n", status.map_byte_length);
+
+>>>>>>> 4213c56b207aba3733a0fea64cc8bbacbbeb50aa
 	return bytes_written;
 }
 
@@ -190,10 +210,12 @@ init_module(void)
 	{
 		const char* src = status.string;
 		char* dst = status.buf;
-		while ((*dst++ = *src++)) {}
-
-		status.width = STATIC_COLSIZE;
-		status.height = STATIC_ROWSIZE;
+		/* Copy the data */
+		while ((*dst++ = *src++))
+		{
+			/* Keep byte length consistent. Ignore '\0' */
+			status.map_byte_length++;
+		}
 	}
 
 	status.buf_ptr = status.buf;
