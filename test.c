@@ -97,7 +97,7 @@ int main(int argc, char* argv[])
 
 	fid = open("/dev/asciimap", O_RDONLY);
 
-	readAndPrintBuffer(fid, buffer, 25);
+	readAndPrintBuffer(fid, buffer, BUFFSIZE);
 
 	return 0;
 }

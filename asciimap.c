@@ -99,7 +99,7 @@ static ssize_t device_write(file, buffer, length, offset)
 	int bytes_written = 0;
 	char* oldLoc = status.buf_ptr;
 
-	while (length > 0 && bytes_written < BSIZE - 1) /* saving room for \0 */
+	while (length > 0 && status.buf_ptr - status.buf < BSIZE - 1) /* saving room for \0 */
 	{
 		get_user(*status.buf_ptr, buffer);
 		status.buf_ptr++;
@@ -107,6 +107,8 @@ static ssize_t device_write(file, buffer, length, offset)
 		bytes_written++;
 		length--;
 	}
+
+	status.buf[BSIZE - 1] = '\0';
 
 	/* Sneaking this in here for testing purposes... */
 	status.buf_ptr = oldLoc;
