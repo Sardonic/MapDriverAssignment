@@ -16,20 +16,21 @@ Table of Contents
 5.0 Instructions
 
 ===========================================================================
-1.0 About:
+1.0 About
 ===========================================================================
 
 This file is a report on the collection of Assignments that makes up our
 final project for CSI-230 Linux/Unix Programming. This project is split 
 into three assignments. The first assignment is to create a script file
 and a custom driver. The second assignment is to create a server and a
-client using sockets. As of this time, the third assignment is undetermined.
+client using sockets. As of this time, the third assignment is 
+undetermined.
 
 ===========================================================================
 2.0 Updates
 ===========================================================================
 
-19/11/14 First version of the report. Much to do. Much to write
+19/11/14 First version of the report. Much to do. Much to write.
 
 ===========================================================================
 3.0 Known Bugs
@@ -44,7 +45,18 @@ client using sockets. As of this time, the third assignment is undetermined.
 4.1 Script
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
+The first part of the project is to write a script file called genmap.sh.
+This bash script generates a (pseudo)-random rectangular ASCII maps. The
+default dimensions of the map are set at 50x50 characters. The width and 
+height of the map can be overridden if desired. The maps generated from 
+this script contain 50% or more non blank characters. If it generates a 
+map that contains more than 50% blank characters, the script will re-run.
+It will execute up to ten times before it terminates and prints an error.
+
+The script pulls bytes from /dev/urandom to be used in the map.  
 
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 4.2 Driver
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+
