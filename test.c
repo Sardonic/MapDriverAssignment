@@ -5,6 +5,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <assert.h>
+#include <sys/ioctl.h>
+#include "asciimap.h"
 
 #define BUFFSIZE (4096 * 2)
 
@@ -99,6 +101,18 @@ int main(int argc, char* argv[])
 	lseek(fid, 0, SEEK_SET);
 
 	readAndPrintBuffer(fid, buffer, BUFFSIZE);
+	
+	close(fid);
 
+	char *msg = "Message passed by ioctl\n";
+	fid = open("/dev/asciimap", O_RDWR);
+
+	ioctl(fid, IOCTL_RESET_MAP, msg);
+	readAndPrintBuffer(fid, buffer, BUFFSIZE);
+
+	ioctl(fid, IOCTL_ZERO_OUT, msg);
+	readAndPrintBuffer(fid, buffer, BUFFSIZE);
+
+	close(fid);
 	return 0;
 }

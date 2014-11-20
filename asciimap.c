@@ -194,10 +194,29 @@ static int device_ioctl(inode, file, ioctl_num, ioctl_param)
 	switch	(ioctl_num)
 	{
 	case IOCTL_RESET_MAP:
-		
+
+		temp = status.buf;
+		while(*temp)
+		{
+			*temp = "\0";
+			temp++;	
+		}	
+
+		status.map_byte_length = mem_copy(status.buf, status.string) - 1;
+		status.buf_ptr = status.buf;
 		break;
+
 	case IOCTL_ZERO_OUT:
+
+		temp = status.buf;
+		while(*temp)
+		{
+			*temp = "\0";
+			temp++;
+		}
+		status.buf_ptr =  status.buf;
 		break;
+
 	case IOCTL_CHECK_CONSISTENCY:
 		break;
 	default:
