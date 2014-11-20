@@ -96,6 +96,7 @@ int main(int argc, char* argv[])
 	close(fid);
 
 	fid = open("/dev/asciimap", O_RDONLY);
+	lseek(fid, 0, SEEK_SET);
 
 	readAndPrintBuffer(fid, buffer, BUFFSIZE);
 

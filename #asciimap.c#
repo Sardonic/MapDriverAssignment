@@ -1,6 +1,5 @@
 #include "asciimap.h"
-
-extern int errno;
+#include <sys/types.h>
 
 static char* initials = "SBDJJS";
 static int num_initials = 6;
@@ -99,6 +98,7 @@ static ssize_t device_write(file, buffer, length, offset)
 	/* TODO: Test for width and height to see if we're adding to the map
 	 * or just overwritting existing data. */
 	int bytes_written = 0;
+	char* oldLoc = status.buf_ptr;
 
 	while (length > 0 && status.buf_ptr - status.buf < BSIZE - 1) /* saving room for \0 */
 	{
@@ -111,47 +111,19 @@ static ssize_t device_write(file, buffer, length, offset)
 
 	status.buf[BSIZE - 1] = '\0';
 
+	/* Sneaking this in here for testing purposes... */
+	status.buf_ptr = oldLoc;
+
 	return bytes_written;
 }
 
 static loff_t device_seek(struct file* file, loff_t offset, int whence)
 {
-	int b_err = 1;
-	int new_ptr_pos;
-	switch(whence)
+	switch whence
 	{
-		case SEEK_SET:
-			if(offset < BSIZE && offset >= 0)
-			{
-				status.buf_ptr = (status.buf + offset);
-				b_err = 0;
-			}
-			break;
-		case SEEK_CUR:
-			new_ptr_pos = offset + (status.buf_ptr - status.buf);
-			if(new_ptr_pos < BSIZE && new_ptr_pos > 0)
-			{
-				status.buf_ptr = (status.buf + new_ptr_pos);
-				b_err = 0;
-			}
-			break;
-		case SEEK_END:
-			if(offset <= 0 && offset > -BSIZE)
-			{
-				status.buf_ptr = ((status.buf + BSIZE - 1) + offset);
-				b_err = 0;
-			}
-			break;
-		default:
-			break;
+	    case SEEK_SET:
 	}
-
-	if(b_err == 1)
-	{
-		return -ESPIPE;
-	}
-
-	return SUCCESS;
+	return 0;
 }
 
 /* Initialize the module - Register the character device */
