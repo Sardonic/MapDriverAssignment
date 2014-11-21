@@ -8,7 +8,7 @@ CC_OPTIONS=-O1 $(WARNINGS) $(ISO) $(DEBUG) $(DEFINE)
 SHELL=/bin/bash
 
 # Where to look for header files
-INC=-I. -I/usr/include -I/usr/src/kernels/`uname -r`/include
+INC=-I. -I/usr/include -I/usr/src/kernels/`uname -r`/include -D_DEBUG
 
 DRIVER=asciimap.o
 MODULE=asciimap.ko

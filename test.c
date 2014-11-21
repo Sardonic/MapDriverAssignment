@@ -63,6 +63,7 @@ static int zeroOutDriver(int fid, char* buffer, int buffsize)
 int main(int argc, char* argv[])
 {
 	int fid;
+	int fid2;
 	char buffer[BUFFSIZE];
 	int bytes_written;
 	int err;
@@ -70,13 +71,26 @@ int main(int argc, char* argv[])
 	fid = open("/dev/asciimap", O_RDWR);
 	ERROR_CHECK(fid);
 
+	fid2 = open("/dev/asciimap", O_RDWR);
+	if (fid2 < 0)
+	{
+		printf("Successfully failed to open driver twice\n");
+		perror(NULL);
+	}
+	else
+	{
+		printf("Opened the driver twice.... Uhhhh....\n");
+		close(fid2);
+		close(fid);
+		exit(1);
+	}
 
 	err = ioctl(fid, IOCTL_CHECK_CONSISTENCY);
 	printf("did we dsucced %d\n", err);
 	
-	/* readAndPrintBuffer(fid, buffer, BUFFSIZE); */
+	readAndPrintBuffer(fid, buffer, BUFFSIZE);
 
-	zeroOutDriver(fid, buffer, BUFFSIZE);
+	/* zeroOutDriver(fid, buffer, BUFFSIZE); */
 
 	printf("Setting pointer to EOF\n");
 	lseek(fid, 0, SEEK_END);

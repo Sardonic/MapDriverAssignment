@@ -142,6 +142,10 @@ static void init_static_map()
 		}
 		status.string[STATIC_COLSIZE * i + j] = '\n';
 	}
+
+	/* This line assumes the string is filled completely with
+	 * useful information, except for the last character. */
+	status.string[STATIC_BSIZE - 1] = '\0';
 }
 
 static int device_open(inode, file)
@@ -166,6 +170,9 @@ static int device_open(inode, file)
 	status.busy = true;
 
 	status.buf_ptr = status.buf;
+
+	/* Does this fix everything? */
+	init_static_map();
 
 	return SUCCESS;
 }
@@ -331,7 +338,9 @@ static int device_ioctl(inode, file, ioctl_num, ioctl_param)
 {
 	char *temp;
 
+#ifdef _DEBUG
 	printk(KERN_INFO "Received ioctl request\n");
+#endif
 
 	switch	(ioctl_num)
 	{
@@ -349,11 +358,11 @@ static int device_ioctl(inode, file, ioctl_num, ioctl_param)
 		 * -Scott						 */
 
 		/* Fill our array with initials, sequentially. */
-		init_static_map();
+		/* init_static_map(); */
 
 		/* This line assumes the string is filled completely with
 		 * useful information, except for the last character. */
-		status.string[STATIC_BSIZE - 1] = '\0';
+		/* status.string[STATIC_BSIZE - 1] = '\0'; */
 
 		temp = status.buf;
 		while(*temp)
@@ -381,7 +390,7 @@ static int device_ioctl(inode, file, ioctl_num, ioctl_param)
 
 	case IOCTL_CHECK_CONSISTENCY:
 		printk(KERN_INFO "First char of status.string: %c\n", status.string[0]);
-		init_static_map();
+		/* init_static_map(); */
 
 		{	
 			int width = 0;
@@ -450,17 +459,15 @@ init_module(void)
 			"Sorry, registering the ASCII device failed with %d\n",
 			err
 		);
-return err;
+		return err;
 	}
 
 	/* Fill our array with initials, sequentially. */
 	init_static_map();
 
-	/* This line assumes the string is filled completely with
-	 * useful information, except for the last character. */
-	status.string[STATIC_BSIZE - 1] = '\0';
 
 	/* Have to use our own mem_copy. Ho-hum. */
+	/* -1 because we don't want to count the null character */
 	status.map_byte_length = mem_copy(status.buf, status.string) - 1;
 
 	status.buf_ptr = status.buf;
