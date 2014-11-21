@@ -97,20 +97,6 @@ struct file_operations Fops =
 	.ioctl = device_ioctl,
 	.open = device_open,
 	.release = device_release
-#if 0
-	NULL,   /* owner */
-	device_seek,   /* seek */
-	device_read,
-	device_write,
-	NULL,   /* readdir */
-	NULL,   /* poll/select */
-	device_ioctl,   /* ioctl */
-	NULL,   /* mmap */
-	device_open,
-	NULL,   /* flush */
-	device_release  /* a.k.a. close */
-
-#endif
 };
 
 
@@ -125,10 +111,10 @@ extern int errno;
 static char* initials = "SBDJJS";
 static int num_initials = 6;
 
-static int  mem_copy(char* dst, const char* src)
+static int mem_copy(char* dst, const char* src)
 {
 	int count = 0;
-	/* Have to use our own memcpy. Ho-hum. */
+	/* Have to use our own mem_copy. Ho-hum. */
 	{
 		while ((*dst++ = *src++))
 		{
@@ -335,22 +321,48 @@ static int device_ioctl(inode, file, ioctl_num, ioctl_param)
 	switch	(ioctl_num)
 	{
 	case IOCTL_RESET_MAP:
+		/* So, for some reason, our status.string is getting zeroed out
+		 * between the call to init_device and here. Maybe it's in
+		 * write or something? I don't really know what the damage is.
+		 * 
+		 * Anyway, here we have to do the exact steps we did back in
+		 * init_module. So here they are, reproduced in full.
+		 *
+		 * I'm hestitant to make a whole function to do this stuff,
+		 * since it shouldn't really be happening anyway. 
+		 *
+		 * -Scott						 */
 
-		for (i = 0; i < BSIZE; ++i)
+		/* Fill our array with initials, sequentially. */
 		{
-			status.buf[i] = '\0';
+			int i,
+			    j;
+
+			for (i = 0; i < STATIC_ROWSIZE; i++)
+			{
+				for (j = 0; j < STATIC_COLSIZE - 1; j++)
+				{
+					char ch = initials[(STATIC_COLSIZE * i + j) % num_initials];
+					status.string[STATIC_COLSIZE * i + j] = ch;
+				}
+				status.string[STATIC_COLSIZE * i + j] = '\n';
+			}
 		}
-		/* temp = status.buf; */
-		/* while(*temp) */
-		/*
+
+		/* This line assumes the string is filled completely with
+		 * useful information, except for the last character. */
+		status.string[STATIC_BSIZE - 1] = '\0';
+
+		temp = status.buf;
+		while(*temp)
 		{
 			*temp = "\0";
 			temp++;	
 		}	
-		*/
 
 		status.map_byte_length = mem_copy(status.buf, status.string) - 1;
 		printk(KERN_INFO "New map size: %d\n", status.map_byte_length);
+		printk(KERN_INFO "First char of status.string: %c\n", status.string[0]);
 		status.buf_ptr = status.buf;
 		break;
 
@@ -418,7 +430,7 @@ init_module(void)
 	 * useful information, except for the last character. */
 	status.string[STATIC_BSIZE - 1] = '\0';
 
-	/* Have to use our own memcpy. Ho-hum. */
+	/* Have to use our own mem_copy. Ho-hum. */
 	status.map_byte_length = mem_copy(status.buf, status.string) - 1;
 
 	status.buf_ptr = status.buf;
