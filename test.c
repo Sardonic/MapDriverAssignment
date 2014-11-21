@@ -51,22 +51,12 @@ int main(int argc, char* argv[])
 	fid = open("/dev/asciimap", O_RDWR);
 	ERROR_CHECK(fid);
 
-	{
-		//assert(20 < BUFFSIZE);
 
-		int i;
-		for (i = 0; i < BUFFSIZE; i++)
-		{
-			buffer[i] = '0';
-		}
-	}
-	bytes_written = write(fid, buffer, BUFFSIZE);
-	printf("Bytes written: %d\n", bytes_written);
-
-	ioctl(fid, IOCTL_RESET_MAP);
+	err = ioctl(fid, IOCTL_CHECK_CONSISTENCY);
 	
 	readAndPrintBuffer(fid, buffer, BUFFSIZE);
-
+	
+	printf("did we dsucced %d", err);
 	close(fid);
 
 	/* lseek(fid, 0, SEEK_SET); */

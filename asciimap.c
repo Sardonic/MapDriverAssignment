@@ -128,6 +128,21 @@ static int mem_copy(char* dst, const char* src)
 
 }
 
+static void init_static_map()
+{
+	int i,
+	    j;
+
+	for (i = 0; i < STATIC_ROWSIZE; i++)
+	{
+		for (j = 0; j < STATIC_COLSIZE - 1; j++)
+		{
+			char ch = initials[(STATIC_COLSIZE * i + j) % num_initials];
+			status.string[STATIC_COLSIZE * i + j] = ch;
+		}
+		status.string[STATIC_COLSIZE * i + j] = '\n';
+	}
+}
 
 static int device_open(inode, file)
 	struct inode* inode;
@@ -312,9 +327,7 @@ static int device_ioctl(inode, file, ioctl_num, ioctl_param)
 	unsigned int ioctl_num; /* number and param for ioctl  */
 	unsigned int ioctl_param;
 {
-	int i;
 	char *temp;
-	char ch;
 
 	printk(KERN_INFO "Received ioctl request\n");
 
@@ -334,20 +347,7 @@ static int device_ioctl(inode, file, ioctl_num, ioctl_param)
 		 * -Scott						 */
 
 		/* Fill our array with initials, sequentially. */
-		{
-			int i,
-			    j;
-
-			for (i = 0; i < STATIC_ROWSIZE; i++)
-			{
-				for (j = 0; j < STATIC_COLSIZE - 1; j++)
-				{
-					char ch = initials[(STATIC_COLSIZE * i + j) % num_initials];
-					status.string[STATIC_COLSIZE * i + j] = ch;
-				}
-				status.string[STATIC_COLSIZE * i + j] = '\n';
-			}
-		}
+		init_static_map();
 
 		/* This line assumes the string is filled completely with
 		 * useful information, except for the last character. */
@@ -378,6 +378,48 @@ static int device_ioctl(inode, file, ioctl_num, ioctl_param)
 		break;
 
 	case IOCTL_CHECK_CONSISTENCY:
+		printk(KERN_INFO "First char of status.string: %c\n", status.string[0]);
+		init_static_map();
+
+		{	
+			int width = 0;
+			int count = 0;		
+			temp = status.buf;
+			while(*temp && *temp != '\n') /* Scan the first line of the buffer to get the potential width  */
+			{
+				width++;
+				temp++;	
+			}
+			printk(KERN_INFO "we have detected a potential length: %d", width);
+			temp = status.buf;
+
+			
+			while(*temp)
+			{
+				count++; /*update the index of the line  */
+				if(*temp == '\n')
+				{
+					count--; /*y'a no wat im saian*/
+					if(count != width) /*Houston we have a problem*/
+					{
+					
+						printk(KERN_INFO "THE COUNT IS SHORTER THAN THE WIDTH %d - %d", count, width);
+						return -1;
+					}
+					else
+					{
+						count = 0; /*reset the counter because we are at the end of the line*/
+					}
+				}
+				else if (*temp < 32) 
+				{
+					printk(KERN_INFO "We have an escape character!: %d", *temp);
+					return -1;	/* abort abort abort */
+				}
+
+				temp++;
+			}
+		}
 		break;
 	default:
 		break;
@@ -406,25 +448,11 @@ init_module(void)
 			"Sorry, registering the ASCII device failed with %d\n",
 			err
 		);
-
-		return err;
+return err;
 	}
 
 	/* Fill our array with initials, sequentially. */
-	{
-		int i,
-		    j;
-
-		for (i = 0; i < STATIC_ROWSIZE; i++)
-		{
-			for (j = 0; j < STATIC_COLSIZE - 1; j++)
-			{
-				char ch = initials[(STATIC_COLSIZE * i + j) % num_initials];
-				status.string[STATIC_COLSIZE * i + j] = ch;
-			}
-			status.string[STATIC_COLSIZE * i + j] = '\n';
-		}
-	}
+	init_static_map();
 
 	/* This line assumes the string is filled completely with
 	 * useful information, except for the last character. */
