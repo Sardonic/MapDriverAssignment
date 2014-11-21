@@ -33,6 +33,25 @@ static void readAndPrintBuffer(int fid, char* buffer, int numChar)
 	printf("%s\n", buffer);
 }
 
+static int zeroOutDriver(int fid, char* buffer, int buffsize)
+{
+	int bytes_written = 0;
+
+	{
+		int i;
+		for (i = 0; i < BUFFSIZE; i++)
+		{
+			buffer[i] = '0';
+		}
+	}
+
+	bytes_written = write(fid, buffer, BUFFSIZE);
+
+	printf("Wrote %d bytes\n", bytes_written);
+
+	return bytes_written;
+}
+
 #define ERROR_CHECK(x) \
 	if (x == -1) \
 	{ \
@@ -53,10 +72,24 @@ int main(int argc, char* argv[])
 
 
 	err = ioctl(fid, IOCTL_CHECK_CONSISTENCY);
+	printf("did we dsucced %d\n", err);
 	
+	/* readAndPrintBuffer(fid, buffer, BUFFSIZE); */
+
+	zeroOutDriver(fid, buffer, BUFFSIZE);
+
+	printf("Setting pointer to EOF\n");
+	lseek(fid, 0, SEEK_END);
+
+	printf("Testing read...\n");
 	readAndPrintBuffer(fid, buffer, BUFFSIZE);
 	
-	printf("did we dsucced %d", err);
+	close(fid);
+
+	fid = open("/dev/asciimap", O_RDONLY);
+
+	readAndPrintBuffer(fid, buffer, BUFFSIZE);
+
 	close(fid);
 
 	/* lseek(fid, 0, SEEK_SET); */

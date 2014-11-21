@@ -165,6 +165,8 @@ static int device_open(inode, file)
 
 	status.busy = true;
 
+	status.buf_ptr = status.buf;
+
 	return SUCCESS;
 }
 
