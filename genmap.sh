@@ -44,7 +44,6 @@ function genMap {
 			printf -v line "%c " "$VAR"
 			MAP_STR="$MAP_STR$line"
 		done
-
 		printf -v line "\n"
 		MAP_STR="$MAP_STR$line"
 	done
