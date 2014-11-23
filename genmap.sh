@@ -23,13 +23,13 @@ function genPseudoRandomASCII {
 
 function getValOrSpace {
 	local CHAR=$(genPseudoRandomASCII)
-	local SPACE=' '
+	local SPACE=" "
 
 	local COIN=$RANDOM
 	local PUT_SPACE=$(( $COIN % 2))
 
-	if [[ $PUT_SPACE -eq 0 ]]; then
-		CHAR=$SPACE
+	if [[ $PUT_SPACE -ne 0 ]]; then
+	    CHAR="$SPACE"
 	fi
 
 	echo -n "$CHAR"
@@ -40,8 +40,8 @@ function genMap {
 
 	for((i=0; i<$MAP_HEIGHT; i++)) do
 		for((j=0; j<$MAP_WIDTH; j++)) do
-			VAR=$(getValOrSpace)
-			printf -v line "%c" $VAR
+			VAR="$(getValOrSpace)"
+			printf -v line "%c " "$VAR"
 			MAP_STR="$MAP_STR$line"
 		done
 
@@ -54,11 +54,11 @@ function genMap {
 
 echo "One moment, generating map..."
 MAP_STR=$(genMap)
-NUM_SPACES=$(echo -n $MAP_STR | tr -cd ' ' | wc -c) # for some reason tr is counting the newlines
-MAX_SPACES=$(( $MAP_HEIGHT + $MAP_HEIGHT * $MAP_WIDTH / 2)) # compensates for the tr thing, check for more spaces
+REAL_CHARS=$(echo -n $MAP_STR | tr -cd ' ' | wc -c)
+MIN_CHARS=$(( ($MAP_HEIGHT * $MAP_WIDTH) / 2))
 ITR=1
 
-while [ $NUM_SPACES -gt $MAX_SPACES ]
+while [ "$REAL_CHARS" -lt "$MIN_CHARS" ]
 do
     if [[ $ITR == 10 ]]; then
 		>&2 echo "Couldn't Generate a file!"
@@ -68,7 +68,7 @@ do
 	echo "One moment, generating map..."
 	MAP_STR=$(genMap)
 
-    NUM_SPACES=$(echo $MAP_STR | tr -cd ' ' | wc -c) # for some reason tr is counting the newlines
+    REAL_CHARS=$(echo -n $MAP_STR | tr -cd ' ' | wc -c)
     ITR=$(( $ITR + 1))
 done
 
