@@ -42,9 +42,6 @@ typedef struct _driver_status
 	/* The actual map data */
 	char  buf[BSIZE];
 
-	/* Original map data */
-	char string[STATIC_BSIZE];
-
 	/* Map size */
 	int map_byte_length;
 
@@ -59,8 +56,58 @@ typedef struct _driver_status
 	int   minor;
 } driver_status_t;
 
-const char string[2501] =
-		  {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '\n',
+const char* string =
+		"                                                 \n" \
+		"   sss                                           \n" \
+		"  sss                                            \n" \
+		"   sss                                           \n" \
+		"  sss                                            \n" \
+		"                                                 \n" \
+		"   aaa                                           \n" \
+		"  aa aa                                          \n" \
+		"  aaaaa                                          \n" \
+		"  aaaaa                                          \n" \
+		"  aa aa                                          \n" \
+		"                                                 \n" \
+		"  bbb                                            \n" \
+		"  b bb                                           \n" \
+		"  bbb                                            \n" \
+		"  b bb                                           \n" \
+		"  bbb                                            \n" \
+		"                                                 \n" \
+		"                                                 \n" \
+		"                                                 \n" \
+		"                                                 \n" \
+		"                                                 \n" \
+		"                                                 \n" \
+		"                                                 \n" \
+		"                                                 \n" \
+		"                                                 \n" \
+		"                                                 \n" \
+		"                                                 \n" \
+		"                                                 \n" \
+		"                                                 \n" \
+		"                                                 \n" \
+		"                                                 \n" \
+		"                                                 \n" \
+		"                                                 \n" \
+		"                                                 \n" \
+		"                                                 \n" \
+		"                                                 \n" \
+		"                                                 \n" \
+		"                                                 \n" \
+		"                                                 \n" \
+		"                                                 \n" \
+		"                                                 \n" \
+		"                                                 \n" \
+		"                                                 \n" \
+		"                                                 \n" \
+		"                                                 \n" \
+		"                                                 \n" \
+		"                                                 \n" \
+		"                                                 \n" \
+		"                                                 \n";
+		  /* {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '\n',
 		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '\n',
 		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '\n',
 		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '\n',
@@ -109,67 +156,13 @@ const char string[2501] =
 		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '\n',
 		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '\n',
 		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '\n',
-		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '\n', '\0'};
+		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '\n', '\0'}; */
 
 
 static driver_status_t status =
 {
 	.busy = false, /* Busy-ness */
 	.buf = {0}, /* Buffer */
-	/*
-	.string = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-		   ' ', ' ', 's', 's', 's', ' ', ' ', ' ', ' ', ' ',
-		   ' ', ' ', 's', 's', 's', ' ', ' ', ' ', ' ', ' ',
-		   ' ', 's', 's', 's', ' ', ' ', ' ', ' ', ' ', ' ',
-		   ' ', 's', 's', 's', ' ', ' ', ' ', ' ', ' ', ' ',
-		   ' ', ' ', 's', 's', 's', ' ', ' ', ' ', ' ', ' ',
-		   ' ', ' ', 's', 's', 's', ' ', ' ', ' ', ' ', ' ',
-		   ' ', 's', 's', 's', ' ', ' ', ' ', ' ', ' ', ' ',
-		   ' ', 's', 's', 's', ' ', ' ', ' ', ' ', ' ', ' ',
-		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-		   ' ', 'a', 'a', 'a', 'a', ' ', ' ', ' ', ' ', ' ',
-		   ' ', 'a', 'a', 'a', 'a', ' ', ' ', ' ', ' ', ' ',
-		   'a', 'a', ' ', ' ', 'a', 'a', ' ', ' ', ' ', ' ',
-		   'a', 'a', ' ', ' ', 'a', 'a', ' ', ' ', ' ', ' ',
-		   'a', 'a', 'a', 'a', 'a', 'a', ' ', ' ', ' ', ' ',
-		   'a', 'a', 'a', 'a', 'a', 'a', ' ', ' ', ' ', ' ',
-		   'a', 'a', 'a', 'a', 'a', 'a', ' ', ' ', ' ', ' ',
-		   'a', 'a', ' ', ' ', 'a', 'a', ' ', ' ', ' ', ' ',
-		   'a', 'a', ' ', ' ', 'a', 'a', ' ', ' ', ' ', ' ',
-		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-		   'b', 'b', 'b', 'b', ' ', ' ', ' ', ' ', ' ', ' ',
-		   'b', 'b', ' ', 'b', 'b', ' ', ' ', ' ', ' ', ' ',
-		   'b', 'b', ' ', 'b', 'b', ' ', ' ', ' ', ' ', ' ',
-		   'b', 'b', 'b', 'b', ' ', ' ', ' ', ' ', ' ', ' ',
-		   'b', 'b', 'b', 'b', ' ', ' ', ' ', ' ', ' ', ' ',
-		   'b', 'b', ' ', 'b', 'b', ' ', ' ', ' ', ' ', ' ',
-		   'b', 'b', ' ', 'b', 'b', ' ', ' ', ' ', ' ', ' ',
-		   'b', 'b', 'b', 'b', ' ', ' ', ' ', ' ', ' ', ' ',
-		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '}; */
-
-
-	.string ={0}, /* Static string */
 	.map_byte_length = 0, /* width */
 	.buf_ptr = NULL, /* total length */
 	.minor = -1 /* minor */
@@ -233,26 +226,6 @@ static int mem_copy(char* dst, const char* src)
 
 }
 
-static void init_static_map()
-{
-	int i,
-	    j;
-
-	for (i = 0; i < STATIC_ROWSIZE; i++)
-	{
-		for (j = 0; j < STATIC_COLSIZE - 1; j++)
-		{
-			char ch = initials[(STATIC_COLSIZE * i + j) % num_initials];
-			status.string[STATIC_COLSIZE * i + j] = ch;
-		}
-		status.string[STATIC_COLSIZE * i + j] = '\n';
-	}
-
-	/* This line assumes the string is filled completely with
-	 * useful information, except for the last character. */
-	status.string[STATIC_BSIZE - 1] = '\0';
-}
-
 static int device_open(inode, file)
 	struct inode* inode;
 	struct file* file;
@@ -275,9 +248,6 @@ static int device_open(inode, file)
 	status.busy = true;
 
 	status.buf_ptr = status.buf;
-
-	/* Does this fix everything? */
-	init_static_map();
 
 	return SUCCESS;
 }
@@ -450,25 +420,6 @@ static int device_ioctl(inode, file, ioctl_num, ioctl_param)
 	switch	(ioctl_num)
 	{
 	case IOCTL_RESET_MAP:
-		/* So, for some reason, our status.string is getting zeroed out
-		 * between the call to init_device and here. Maybe it's in
-		 * write or something? I don't really know what the damage is.
-		 * 
-		 * Anyway, here we have to do the exact steps we did back in
-		 * init_module. So here they are, reproduced in full.
-		 *
-		 * I'm hestitant to make a whole function to do this stuff,
-		 * since it shouldn't really be happening anyway. 
-		 *
-		 * -Scott						 */
-
-		/* Fill our array with initials, sequentially. */
-		/* init_static_map(); */
-
-		/* This line assumes the string is filled completely with
-		 * useful information, except for the last character. */
-		/* status.string[STATIC_BSIZE - 1] = '\0'; */
-
 		temp = status.buf;
 		while(*temp)
 		{
@@ -495,7 +446,6 @@ static int device_ioctl(inode, file, ioctl_num, ioctl_param)
 
 	case IOCTL_CHECK_CONSISTENCY:
 		printk(KERN_INFO "First char of string: %c\n", string[0]);
-		/* init_static_map(); */
 
 		{	
 			int width = 0;
@@ -566,9 +516,6 @@ init_module(void)
 		);
 		return err;
 	}
-
-	/* Fill our array with initials, sequentially. */
-	init_static_map();
 
 
 	/* Have to use our own mem_copy. Ho-hum. */
