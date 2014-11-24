@@ -76,6 +76,12 @@ const char* string =
 		"  bbb                                            \n" \
 		"                                                 \n" \
 		"                                                 \n" \
+		"                dddd                             \n" \
+		"                dd dd                            \n" \
+		"                dd  dd                           \n" \
+		"                dd  dd                           \n" \
+		"                dd dd                            \n" \
+		"                dddd                             \n" \
 		"                                                 \n" \
 		"                                                 \n" \
 		"                                                 \n" \
@@ -84,27 +90,21 @@ const char* string =
 		"                                                 \n" \
 		"                                                 \n" \
 		"                                                 \n" \
+		"                jjjjjj       jjjjjj              \n" \
+		"                  jj           jj                \n" \
+		"                  jj           jj                \n" \
+		"                  jj           jj                \n" \
+		"               jj jj        jj jj                \n" \
+		"                jjj          jjj                 \n" \
 		"                                                 \n" \
 		"                                                 \n" \
 		"                                                 \n" \
 		"                                                 \n" \
 		"                                                 \n" \
-		"                                                 \n" \
-		"                                                 \n" \
-		"                                                 \n" \
-		"                                                 \n" \
-		"                                                 \n" \
-		"                                                 \n" \
-		"                                                 \n" \
-		"                                                 \n" \
-		"                                                 \n" \
-		"                                                 \n" \
-		"                                                 \n" \
-		"                                                 \n" \
-		"                                                 \n" \
-		"                                                 \n" \
-		"                                                 \n" \
-		"                                                 \n" \
+		"                             sss                 \n" \
+		"                            sss                  \n" \
+		"                             sss                 \n" \
+		"                            sss                  \n" \
 		"                                                 \n" \
 		"-------------------------------------------------\n";
 
