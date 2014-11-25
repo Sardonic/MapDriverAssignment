@@ -15,11 +15,27 @@ typedef struct cli_request
 	int height; /* Map height */
 } cli_request_t;
 
-typedef struct srv_response
+typedef enum
 {
-	int width;
-	int height;
-	char map[BSIZE];
+	MAP,
+	ERR
+} srv_response_type_t;
+
+typedef struct srv_response_t
+{
+	srv_response_type_t type;
+	union
+	{
+		struct {
+			int err_len;
+			char err[BSIZE];
+		} err_data;
+		struct {
+			int width;
+			int height;
+			char map[BSIZE];
+		} map_data;
+	} data;
 } srv_response_t;
 
 #endif /* MAPSERVER_H */

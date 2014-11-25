@@ -2,7 +2,7 @@
 CC=gcc
 DEBUG=-g
 INCLUDE=-I. -I..
-FLAGS=--std=c99
+FLAGS=--std=c99 -Wall -Wextra -Werror
 EXE=mapserver
 OBJ=mapserver.o
 

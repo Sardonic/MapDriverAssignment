@@ -25,11 +25,25 @@ int main(int argc, char *argv[])
 	cli_request_t req;
 	char recvBuff[256];
 
+	if (argc < 3)
+	{
+		fprintf(stderr, "Usage: %s width height [command]", argv[0]);
+		exit(1);
+	}
+
 	/* Set up request */
 	{
-		req.cmd = MAP_REQ_CHAR;
-		req.width = 128;
-		req.height = 128;
+		if (argc == 4)
+		{
+			req.cmd = argv[3][0];
+		}
+		else
+		{
+			req.cmd = MAP_REQ_CHAR;
+		}
+
+		req.width = atoi(argv[1]);
+		req.height = atoi(argv[2]);
 	}
 
 	memset(recvBuff, '0', sizeof(recvBuff));
