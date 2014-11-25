@@ -42,9 +42,6 @@ typedef struct _driver_status
 	/* The actual map data */
 	char  buf[BSIZE];
 
-	/* Original map data */
-	char string[STATIC_BSIZE];
-
 	/* Map size */
 	int map_byte_length;
 
@@ -59,12 +56,63 @@ typedef struct _driver_status
 	int   minor;
 } driver_status_t;
 
+const char* string =
+		"                                                 \n" \
+		"   sss                                           \n" \
+		"  sss                                            \n" \
+		"   sss                                           \n" \
+		"  sss                                            \n" \
+		"                                                 \n" \
+		"   aaa                                           \n" \
+		"  aa aa                                          \n" \
+		"  aaaaa                                          \n" \
+		"  aaaaa                                          \n" \
+		"  aa aa                                          \n" \
+		"                                                 \n" \
+		"  bbb                                            \n" \
+		"  b bb                                           \n" \
+		"  bbb                                            \n" \
+		"  b bb                                           \n" \
+		"  bbb                                            \n" \
+		"                                                 \n" \
+		"             jjjjjj                              \n" \
+		"               jj                                \n" \
+		"               jj                                \n" \
+		"            jj jj                                \n" \
+		"             jjj                                 \n" \
+		"                                                 \n" \
+		"              aaaa                               \n" \
+		"             aa  aa                              \n" \
+		"             aaaaaa                              \n" \
+		"             aaaaaa                              \n" \
+		"             aa  aa                              \n" \
+		"                            ddddd                \n" \
+		"              sss           dd ddd               \n" \
+		"             sss            dd  ddd              \n" \
+		"              sss           dd ddd               \n" \
+		"             sss            ddddd                \n" \
+		"                                                 \n" \
+		"                            kk  kk               \n" \
+		"                            kk kk                \n" \
+		"                            kkkk                 \n" \
+		"                            kkkk                 \n" \
+		"                            kk kk                \n" \
+		"                            kk  kk               \n" \
+		"                                                 \n" \
+		"                             jjjjjj              \n" \
+		"                               jj                \n" \
+		"                               jj                \n" \
+		"                            jj jj                \n" \
+		"                             jjj                 \n" \
+		"                                                 \n" \
+		"                                                 \n" \
+		"-------------------------------------------------\n";
+
 
 static driver_status_t status =
 {
 	.busy = false, /* Busy-ness */
 	.buf = {0}, /* Buffer */
-	.string ={0}, /* Static string */
 	.map_byte_length = 0, /* width */
 	.buf_ptr = NULL, /* total length */
 	.minor = -1 /* minor */
@@ -78,7 +126,7 @@ static int  device_release(struct inode*, struct file*);
 static ssize_t device_read(struct file*, char*, size_t, loff_t*);
 static ssize_t device_write(struct file*, const char*, size_t, loff_t*);
 static loff_t device_seek(struct file *, loff_t, int);
-static int device_ioctl(struct inode*, struct file*, unsigned int, unsigned int);
+static int device_ioctl(struct inode*, struct file*, unsigned int, unsigned long);
 /* Kernel module-related */
 
 /* Module Declarations ***************************** */
@@ -108,9 +156,6 @@ void cleanup_module(void);
 
 extern int errno;
 
-static char* initials = "SBDJJS";
-static int num_initials = 6;
-
 static int mem_copy(char* dst, const char* src)
 {
 	int count = 0;
@@ -126,26 +171,6 @@ static int mem_copy(char* dst, const char* src)
 	}
 	return count;
 
-}
-
-static void init_static_map()
-{
-	int i,
-	    j;
-
-	for (i = 0; i < STATIC_ROWSIZE; i++)
-	{
-		for (j = 0; j < STATIC_COLSIZE - 1; j++)
-		{
-			char ch = initials[(STATIC_COLSIZE * i + j) % num_initials];
-			status.string[STATIC_COLSIZE * i + j] = ch;
-		}
-		status.string[STATIC_COLSIZE * i + j] = '\n';
-	}
-
-	/* This line assumes the string is filled completely with
-	 * useful information, except for the last character. */
-	status.string[STATIC_BSIZE - 1] = '\0';
 }
 
 static int device_open(inode, file)
@@ -170,9 +195,6 @@ static int device_open(inode, file)
 	status.busy = true;
 
 	status.buf_ptr = status.buf;
-
-	/* Does this fix everything? */
-	init_static_map();
 
 	return SUCCESS;
 }
@@ -334,7 +356,7 @@ static int device_ioctl(inode, file, ioctl_num, ioctl_param)
 	struct inode* inode;
 	struct file* file;
 	unsigned int ioctl_num; /* number and param for ioctl  */
-	unsigned int ioctl_param;
+	unsigned long ioctl_param;
 {
 	char *temp;
 
@@ -345,35 +367,16 @@ static int device_ioctl(inode, file, ioctl_num, ioctl_param)
 	switch	(ioctl_num)
 	{
 	case IOCTL_RESET_MAP:
-		/* So, for some reason, our status.string is getting zeroed out
-		 * between the call to init_device and here. Maybe it's in
-		 * write or something? I don't really know what the damage is.
-		 * 
-		 * Anyway, here we have to do the exact steps we did back in
-		 * init_module. So here they are, reproduced in full.
-		 *
-		 * I'm hestitant to make a whole function to do this stuff,
-		 * since it shouldn't really be happening anyway. 
-		 *
-		 * -Scott						 */
-
-		/* Fill our array with initials, sequentially. */
-		/* init_static_map(); */
-
-		/* This line assumes the string is filled completely with
-		 * useful information, except for the last character. */
-		/* status.string[STATIC_BSIZE - 1] = '\0'; */
-
 		temp = status.buf;
 		while(*temp)
 		{
-			*temp = "\0";
+			*temp = '\0';
 			temp++;	
 		}	
 
-		status.map_byte_length = mem_copy(status.buf, status.string) - 1;
+		status.map_byte_length = mem_copy(status.buf, string) - 1;
 		printk(KERN_INFO "New map size: %d\n", status.map_byte_length);
-		printk(KERN_INFO "First char of status.string: %c\n", status.string[0]);
+		printk(KERN_INFO "First char of string: %c\n", string[0]);
 		status.buf_ptr = status.buf;
 		break;
 
@@ -382,15 +385,14 @@ static int device_ioctl(inode, file, ioctl_num, ioctl_param)
 		temp = status.buf;
 		while(*temp)
 		{
-			*temp = "\0";
+			*temp = '\0';
 			temp++;
 		}
 		status.buf_ptr =  status.buf;
 		break;
 
 	case IOCTL_CHECK_CONSISTENCY:
-		printk(KERN_INFO "First char of status.string: %c\n", status.string[0]);
-		/* init_static_map(); */
+		printk(KERN_INFO "First char of string: %c\n", string[0]);
 
 		{	
 			int width = 0;
@@ -462,13 +464,10 @@ init_module(void)
 		return err;
 	}
 
-	/* Fill our array with initials, sequentially. */
-	init_static_map();
-
 
 	/* Have to use our own mem_copy. Ho-hum. */
 	/* -1 because we don't want to count the null character */
-	status.map_byte_length = mem_copy(status.buf, status.string) - 1;
+	status.map_byte_length = mem_copy(status.buf, string) - 1;
 
 	status.buf_ptr = status.buf;
 
