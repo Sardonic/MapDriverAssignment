@@ -23,7 +23,6 @@ int main(int argc, char *argv[])
 	struct sockaddr_in serv_addr;
 	struct hostent *server;
 	cli_request_t req;
-	char recvBuff[256];
 
 	if (argc < 3)
 	{
@@ -45,8 +44,6 @@ int main(int argc, char *argv[])
 		req.width = atoi(argv[1]);
 		req.height = atoi(argv[2]);
 	}
-
-	memset(recvBuff, '0', sizeof(recvBuff));
 
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 		error("Could not create socket");

@@ -1,8 +1,8 @@
 
 CC=gcc
-DEBUG=-g
+DEBUG=-g -D_DEBUG
 INCLUDE=-I. -I..
-FLAGS=--std=c99 -Wall -Wextra -Werror
+FLAGS=--std=c99 -Wall -Wextra
 EXE=mapserver
 OBJ=mapserver.o
 
