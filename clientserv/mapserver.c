@@ -16,9 +16,10 @@ static void fatal(const char* msg)
 
 int main(int argc, char* argv[])
 {
-	int sockfd, newsockfd, portno;
+	int sockfd, connfd, portno;
 	socklen_t clilen;
 	char buffer[256];
+	cli_request_t cli_req;
 	struct sockaddr_in serv_addr, cli_addr;
 	int n;
 
@@ -29,7 +30,7 @@ int main(int argc, char* argv[])
 	memset(&serv_addr, '0', sizeof(serv_addr));
 	portno = DEFAULT_PORT;
 	serv_addr.sin_family = AF_INET;
-	serv_addr.sin_addr.s_addr = INADDR_ANY;
+	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	serv_addr.sin_port = htons(portno);
 	if (bind(sockfd, (struct sockaddr *) &serv_addr,
 			sizeof(serv_addr)) < 0)
@@ -38,23 +39,29 @@ int main(int argc, char* argv[])
 	listen(sockfd, 5);
 	clilen = sizeof(cli_addr);
 
-	newsockfd = accept(sockfd,
+	connfd = accept(sockfd,
 			(struct sockaddr *) &cli_addr,
 			&clilen);
-	if (newsockfd < 0)
+	if (connfd < 0)
 		fatal(NULL);
 
 	memset(&serv_addr, '0', sizeof(serv_addr));
-	n = read(newsockfd, buffer, 255);
+	n = read(connfd, &cli_req, sizeof(cli_request_t));
 	if (n < 0)
 		fatal(NULL);
 
-	printf("Here is the message: %s\n", buffer);
-	n = write(newsockfd, "I got your message", 18);
+	/* printf("Here is the message: %s\n", buffer); */
+	{
+		printf("Request:\t%c\n", cli_req.cmd);
+		printf("Width:\t%d\n", cli_req.width);
+		printf("Height:\t%d\n", cli_req.height);
+	}
+
+	/* n = write(connfd, "I got your message", 18); */
 	if (n < 0)
 		fatal(NULL);
 
-	close(newsockfd);
+	close(connfd);
 	close(sockfd);
 
 	return 0;

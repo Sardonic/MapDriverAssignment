@@ -15,8 +15,6 @@
 
 /* Device Declarations **************************** */
 
-/* The maximum length of the message from the device */
-#define BSIZE 8192
 
 #define STATIC_ROWSIZE 50
 #define STATIC_COLSIZE 51 /* save space for \n at the end */

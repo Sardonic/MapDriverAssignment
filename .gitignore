@@ -20,4 +20,5 @@ modules.order
 driver-assignment-1.tar.gz
 clientserv/a.out
 clientserv/mapserver
-clientserv/testcli.c
+clientserv/a.out
+*.o
