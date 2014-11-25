@@ -1,52 +1,77 @@
-#include<stdio.h>
-#include<sys/types.h>
-#include<sys/socket.h>
-#include<netinet/in.h>
-#include<netdb.h>
-#include<stdlib.h>
-#include<errno.h>
-#include<arpa/inet.h>
-#include<string.h>
+/*our includes */
+#include "mapserver.h"
 
-int DEFAULT_PORT = 23032;
-char* IP_DEFAULT = "127.0.0.1";
+/* needed includes*/
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h> 
+#include <errno.h>
+#include <arpa/inet.h>
+
+
+void error(const char *msg)
+{
+	perror(msg);
+	exit(0);
+}
 
 
 int main(int argc, char *argv[])
 {
-	char requestBuff[sizeof(char) + sizeof(int)];
-
-	int sockfd = 0, n = 0, portno = DEFAULT_PORT;
+	int sockfd, portno, n;
 	struct sockaddr_in serv_addr;
 	struct hostent *server;
+	cli_request_t req;
+	char *ip_addr;
 
-	/* TODO: check arguments*/
-
-	memset(&requestBuff, '0' , sizeof(requestBuff));
-
-	if((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+	/* Set up request */
 	{
-		printf ("\n Error : Could not create socket\n");
-		return 1;
+		/* set up the defaults */
+		req.cmd = MAP_REQ_CHAR;
+		portno = DEFAULT_PORT;
+		ip_addr = DEFAULT_IP;
+		req.height = 0;
+		req.width = 0;
+		
+		/*switch case magic to properly set things based on user */
+		switch(argc)
+		{
+			case 5:
+				req.height = atoi(argv[4]);
+				req.width = atoi(argv[3]);
+			case 3:
+				ip_addr = argv[2];
+			case 2:
+				portno = atoi(argv[1]);
+				break;
+		}
+		
+
 	}
-	
-	memset(&serv_addr, '0' , sizeof(serv_addr));
+
+	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+		error("Could not create socket");
+
+	memset(&serv_addr, '0', sizeof(serv_addr));
 	serv_addr.sin_family = AF_INET;
-	serv_addr.sin_port = htons(DEFAULT_PORT);
-	
-	if(inet_pton(AF_INET, IP_DEFAULT, &serv_addr.sin_addr) <=0)
-	{
-		printf("\n inet_pton error occured\n");
-		return 1;
-	}
+	serv_addr.sin_port = htons(portno);
+	if (inet_pton(AF_INET, ip_addr, &serv_addr.sin_addr) <= 0)
+		error("inet_pton error");
 
-	if( connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
-	{
-		printf("\n Error : Connection Failed \n");
-		return -1;
-	}
+	if (connect(sockfd,
+			(struct sockaddr*)&serv_addr,
+			sizeof(serv_addr)) < 0)
+		error("connect() error");
 
+	n = write(sockfd,&req,sizeof(req));
+	if (n < 0) 
+		error("ERROR writing to socket");
+
+	close(sockfd);
 
 }
-
-
