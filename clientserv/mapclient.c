@@ -42,12 +42,12 @@ int main(int argc, char *argv[])
 		switch(argc)
 		{
 			case 5:
-				req.height = atoi(argv[4]);
-				req.width = atoi(argv[3]);
+				ip_addr = argv[4];
+			case 4:
+				portno = atoi(argv[3]);
 			case 3:
-				ip_addr = argv[2];
-			case 2:
-				portno = atoi(argv[1]);
+				req.height = atoi(argv[2]);
+				req.width = atoi(argv[1]);
 				break;
 		}
 		
