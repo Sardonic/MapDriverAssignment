@@ -75,88 +75,38 @@ const char* string =
 		"  b bb                                           \n" \
 		"  bbb                                            \n" \
 		"                                                 \n" \
+		"             jjjjjj                              \n" \
+		"               jj                                \n" \
+		"               jj                                \n" \
+		"            jj jj                                \n" \
+		"             jjj                                 \n" \
+		"                                                 \n" \
+		"              aaaa                               \n" \
+		"             aa  aa                              \n" \
+		"             aaaaaa                              \n" \
+		"             aaaaaa                              \n" \
+		"             aa  aa                              \n" \
+		"                            ddddd                \n" \
+		"              sss           dd ddd               \n" \
+		"             sss            dd  ddd              \n" \
+		"              sss           dd ddd               \n" \
+		"             sss            ddddd                \n" \
+		"                                                 \n" \
+		"                            kk  kk               \n" \
+		"                            kk kk                \n" \
+		"                            kkkk                 \n" \
+		"                            kkkk                 \n" \
+		"                            kk kk                \n" \
+		"                            kk  kk               \n" \
+		"                                                 \n" \
+		"                             jjjjjj              \n" \
+		"                               jj                \n" \
+		"                               jj                \n" \
+		"                            jj jj                \n" \
+		"                             jjj                 \n" \
 		"                                                 \n" \
 		"                                                 \n" \
-		"                                                 \n" \
-		"                                                 \n" \
-		"                                                 \n" \
-		"                                                 \n" \
-		"                                                 \n" \
-		"                                                 \n" \
-		"                                                 \n" \
-		"                                                 \n" \
-		"                                                 \n" \
-		"                                                 \n" \
-		"                                                 \n" \
-		"                                                 \n" \
-		"                                                 \n" \
-		"                                                 \n" \
-		"                                                 \n" \
-		"                                                 \n" \
-		"                                                 \n" \
-		"                                                 \n" \
-		"                                                 \n" \
-		"                                                 \n" \
-		"                                                 \n" \
-		"                                                 \n" \
-		"                                                 \n" \
-		"                                                 \n" \
-		"                                                 \n" \
-		"                                                 \n" \
-		"                                                 \n" \
-		"                                                 \n" \
-		"                                                 \n" \
-		"                                                 \n";
-		  /* {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '\n',
-		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '\n',
-		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '\n',
-		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '\n',
-		   ' ', ' ', 's', 's', 's', ' ', ' ', ' ', ' ', ' ', '\n',
-		   ' ', ' ', 's', 's', 's', ' ', ' ', ' ', ' ', ' ', '\n',
-		   ' ', 's', 's', 's', ' ', ' ', ' ', ' ', ' ', ' ', '\n',
-		   ' ', 's', 's', 's', ' ', ' ', ' ', ' ', ' ', ' ', '\n',
-		   ' ', ' ', 's', 's', 's', ' ', ' ', ' ', ' ', ' ', '\n',
-		   ' ', ' ', 's', 's', 's', ' ', ' ', ' ', ' ', ' ', '\n',
-		   ' ', 's', 's', 's', ' ', ' ', ' ', ' ', ' ', ' ', '\n',
-		   ' ', 's', 's', 's', ' ', ' ', ' ', ' ', ' ', ' ', '\n',
-		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '\n',
-		   ' ', 'a', 'a', 'a', 'a', ' ', ' ', ' ', ' ', ' ', '\n',
-		   ' ', 'a', 'a', 'a', 'a', ' ', ' ', ' ', ' ', ' ', '\n',
-		   'a', 'a', ' ', ' ', 'a', 'a', ' ', ' ', ' ', ' ', '\n',
-		   'a', 'a', ' ', ' ', 'a', 'a', ' ', ' ', ' ', ' ', '\n',
-		   'a', 'a', 'a', 'a', 'a', 'a', ' ', ' ', ' ', ' ', '\n',
-		   'a', 'a', 'a', 'a', 'a', 'a', ' ', ' ', ' ', ' ', '\n',
-		   'a', 'a', 'a', 'a', 'a', 'a', ' ', ' ', ' ', ' ', '\n',
-		   'a', 'a', ' ', ' ', 'a', 'a', ' ', ' ', ' ', ' ', '\n',
-		   'a', 'a', ' ', ' ', 'a', 'a', ' ', ' ', ' ', ' ', '\n',
-		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '\n',
-		   'b', 'b', 'b', 'b', ' ', ' ', ' ', ' ', ' ', ' ', '\n',
-		   'b', 'b', ' ', 'b', 'b', ' ', ' ', ' ', ' ', ' ', '\n',
-		   'b', 'b', ' ', 'b', 'b', ' ', ' ', ' ', ' ', ' ', '\n',
-		   'b', 'b', 'b', 'b', ' ', ' ', ' ', ' ', ' ', ' ', '\n',
-		   'b', 'b', 'b', 'b', ' ', ' ', ' ', ' ', ' ', ' ', '\n',
-		   'b', 'b', ' ', 'b', 'b', ' ', ' ', ' ', ' ', ' ', '\n',
-		   'b', 'b', ' ', 'b', 'b', ' ', ' ', ' ', ' ', ' ', '\n',
-		   'b', 'b', 'b', 'b', ' ', ' ', ' ', ' ', ' ', ' ', '\n',
-		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '\n',
-		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '\n',
-		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '\n',
-		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '\n',
-		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '\n',
-		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '\n',
-		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '\n',
-		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '\n',
-		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '\n',
-		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '\n',
-		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '\n',
-		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '\n',
-		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '\n',
-		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '\n',
-		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '\n',
-		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '\n',
-		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '\n',
-		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '\n',
-		   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '\n', '\0'}; */
+		"-------------------------------------------------\n";
 
 
 static driver_status_t status =
@@ -176,7 +126,7 @@ static int  device_release(struct inode*, struct file*);
 static ssize_t device_read(struct file*, char*, size_t, loff_t*);
 static ssize_t device_write(struct file*, const char*, size_t, loff_t*);
 static loff_t device_seek(struct file *, loff_t, int);
-static int device_ioctl(struct inode*, struct file*, unsigned int, unsigned int);
+static int device_ioctl(struct inode*, struct file*, unsigned int, unsigned long);
 /* Kernel module-related */
 
 /* Module Declarations ***************************** */
@@ -205,9 +155,6 @@ void cleanup_module(void);
 
 
 extern int errno;
-
-static char* initials = "SBDJJS";
-static int num_initials = 6;
 
 static int mem_copy(char* dst, const char* src)
 {
@@ -409,7 +356,7 @@ static int device_ioctl(inode, file, ioctl_num, ioctl_param)
 	struct inode* inode;
 	struct file* file;
 	unsigned int ioctl_num; /* number and param for ioctl  */
-	unsigned int ioctl_param;
+	unsigned long ioctl_param;
 {
 	char *temp;
 
@@ -423,7 +370,7 @@ static int device_ioctl(inode, file, ioctl_num, ioctl_param)
 		temp = status.buf;
 		while(*temp)
 		{
-			*temp = "\0";
+			*temp = '\0';
 			temp++;	
 		}	
 
@@ -438,7 +385,7 @@ static int device_ioctl(inode, file, ioctl_num, ioctl_param)
 		temp = status.buf;
 		while(*temp)
 		{
-			*temp = "\0";
+			*temp = '\0';
 			temp++;
 		}
 		status.buf_ptr =  status.buf;
