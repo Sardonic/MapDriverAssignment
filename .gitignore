@@ -18,3 +18,7 @@ asciimap.o
 test
 modules.order
 driver-assignment-1.tar.gz
+clientserv/a.out
+clientserv/mapserver
+clientserv/a.out
+*.o

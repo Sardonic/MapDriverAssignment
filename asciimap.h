@@ -15,7 +15,8 @@
 #ifndef _MAP_DEVICE_H
 #define _MAP_DEVICE_H
 
-
+/* The maximum length of the message from the device */
+#define BSIZE 8192
 
 #include <linux/ioctl.h> /* for ioctl defs */
 
