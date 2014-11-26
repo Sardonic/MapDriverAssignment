@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 		error("Could not create socket");
 
-	memset(&serv_addr, '0', sizeof(serv_addr));
+	memset(&serv_addr, 0, sizeof(serv_addr));
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_port = htons(portno);
 	if (inet_pton(AF_INET, ip_addr, &serv_addr.sin_addr) <= 0)

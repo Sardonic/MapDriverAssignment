@@ -133,7 +133,7 @@ int main(void)
 	if (sockfd < 0)
 		fatal(NULL);
 
-	memset(&serv_addr, '0', sizeof(serv_addr));
+	memset(&serv_addr, 0, sizeof(serv_addr));
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	serv_addr.sin_port = htons(DEFAULT_PORT);
@@ -152,7 +152,7 @@ int main(void)
 		if (connfd < 0)
 			fatal(NULL);
 
-		memset(&serv_addr, '0', sizeof(serv_addr));
+		memset(&serv_addr, 0, sizeof(serv_addr));
 		n = read(connfd, &cli_req, sizeof(cli_request_t));
 		if (n < 0)
 			fatal(NULL);

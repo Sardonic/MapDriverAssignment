@@ -3,17 +3,19 @@
 Final Assignment Linux Report
 By Scott B, David J, Jack S.
 Team Herugrim
-Last Updated: 19/11/14     Version 1.0
+Last Updated: 25/11/14     Version 1.1
 ===========================================================================
 
 Table of Contents
 1.0 About
 2.0 Updates
 3.0 Known Bugs
+	3.1 Driver
+	3.2 Client/Server
 4.0 Components
 	4.1 Script
 	4.2 Driver
-5.0 Instructions
+	4.3 Client/Server
 
 ===========================================================================
 1.0 About
@@ -31,6 +33,7 @@ undetermined.
 ===========================================================================
 
 19/11/14 First version of the report. Much to do. Much to write.
+25/11/14 Updated information on some of the components and the known bugs. 
 
 ===========================================================================
 3.0 Known Bugs
@@ -42,6 +45,37 @@ undetermined.
 The driver does not call printk() if the prink() is surrounded by an #ifdef
 _DEBUG statement. Must have something to do with the makefile.
 
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+3.2 Client/Server
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+Client is very bossy. It tells the server what to do, but it does not
+listen for the server's response. Of course, this means it also does not
+report errors or print the map that it receives from the server.
+
+Server has developed the habit of segfaulting on certain client requests.
+This seems to be related to the map size sent by the client.
+
+Server does not actually read from /dev/asciimap yet, instead making up
+its own map line.
+
+Server does not properly store the map, instead re-writing the same line
+to the beginning of the map over and over again.
+
+Server does not generate maps differently when it receives '0' from the
+client, although it does detect the '0' from the client and reports
+that it should react differently.
+
+Server does not write back to the client yet, instead printing to stdout
+for debugging purposes.
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+3.2 Test C File (testForkExec.c)
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+Currently it counts tabs as one char, causing the map to appear misaligned.
+This may or may not be a bug, but I'm going to fix it anyway, as I don't
+like how it looks.
 
 ===========================================================================
 4.0 Components
@@ -65,4 +99,31 @@ then pipes them into base64 to remove bad characters.
 4.2 Driver
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
+Driver does what driver does. This is a character device driver. It is used 
+to read and write out ASCII maps. Write writes to to the driver's buffer 
+with the map data supplied. Read returns the map data within the size, 
+bounds and map limits. The driver holds a static map that is based off of 
+the teams initials. The driver also has a few ioctl() commands to reset the
+map to the static, zero out the map, and checking the map for consistency. 
 
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+4.3 Client/Server
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+The Client sends a request to the server asking for a map with out without
+a determined with and height. The Server then accepts or denies the reqeust
+and generates a map based on the restrictions given. It then returns the 
+map or an error to the client.
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+4.3 Test C Program (testForkExec.c)
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+The test program can either fork/exec genmap.sh, or carve maps out of
+files. The -w, -h, and -l options can be specified with numbers indicating
+width, height, and starting line number respectively. By default the width
+and height are 10, and the line number is 1. If given no non-option
+arguments, genmap.sh is forked and exec'd. If given non-option arguments
+it forks processes for each argument and tries to open the file named after
+the argument. If a file is not found, or the arguments are misused, it
+prints a usage message.
