@@ -37,7 +37,6 @@ int main(int argc, char *argv[])
 		int opt;
 		while ((opt = getopt (argc, argv, "i:w:h:")) != -1)
 		{
-
 		    switch(opt)
 		    {
 			case 'i':
@@ -53,6 +52,8 @@ int main(int argc, char *argv[])
 				printf("Usage: the -i, -w, and -h options correspond to ip, width and height respectively.\n");
 			break;
 		    }
+		}
+
 	}
 
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
