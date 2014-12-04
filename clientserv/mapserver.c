@@ -9,8 +9,14 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-/* Error messages returned to the client */
-const char* ERR_MSG = "ERROR: Malformed request.\n";
+/* Error codes */
+#define ECHAR -1
+#define ENEGHEIGHT -2
+#define ENEGWIDTH -3
+
+const char* ERR_MSGS[] = {"ERROR: Unrecognized char",
+			"ERROR: Height is negative",
+			"ERROR: Width is negative"};
 
 static void fatal(const char* msg)
 {
@@ -28,39 +34,37 @@ char* truncate_to_width(char* line, unsigned int width)
 	return line;
 }
 
-bool is_request_good(const cli_map_request_t* cli_req)
+int is_request_good(const cli_map_request_t* cli_req)
 {
-	bool returnval = false;
+	int returnval = 0;
 
 	if (cli_req->width < 0)
-		returnval = false;
+		returnval = ENEGWIDTH;
 	else if (cli_req->width != 0 && cli_req->height < 0)
-		returnval = false;
+		returnval = ENEGHEIGHT;
 	else
-		returnval = true;
+		returnval = 0;
 
 	return returnval;
 }
 
-int respond_with_unknown_request_error(int connfd, char cmd)
+int respond_err(int connfd, int err)
 {
 	char msg[50] = {0};
-	int len = 0;
 	int n;
+	int index;
+	index = err * -1 - 1;
 
-	len = snprintf(msg,
-			50,
-			"%cERROR: Unrecognized command char: %c",
-			SRV_ERR_CHAR,
-			cmd);
+	/* TODO: Write message length to socket */
+	strncpy(msg, ERR_MSGS[index], 50);
+
 	n = write(connfd, msg, strlen(msg) + 1);
 	if (n < 0)
 		fatal(NULL);
 
 #ifdef _DEBUG
-	printf("Unknown request error.\n");
-	printf("Wrote message: %s", msg);
-	printf("Message length: %d", len);
+	printf("Wrote message: %s\n", msg);
+	printf("Message length: %d\n", n);
 #endif
 
 	return 0;
@@ -75,12 +79,15 @@ int respond_to_map_request(int connfd, const cli_map_request_t* cli_req)
 	height = cli_req->height;
 	srv_map_response_t map_resp;
 
-	map_resp.width = width;
-	map_resp.height = height;
 	
 	/* Check message validity */
-	if (!is_request_good(cli_req))
+	int err = 0;
+	if ((err = is_request_good(cli_req)) < 0)
 	{
+#ifdef _DEBUG
+		printf("Problem with map request\n");
+#endif
+		respond_err(connfd, err);
 		return -1;
 	}
 
@@ -90,26 +97,33 @@ int respond_to_map_request(int connfd, const cli_map_request_t* cli_req)
 		height = 50;
 	}
 
-	char* line = "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890\n";
-	char msg[50] = {0};
-	int acc = 0;
-	memset(&msg[acc], SRV_MAP_CHAR, sizeof(char));
-	acc += sizeof(char);
-	memcpy(&msg[acc], &map_resp, sizeof(map_resp));
-	acc += sizeof(map_resp);
-	strncat(&msg[acc], line, 50 - acc);
-	acc += strlen(&msg[acc]);
+	map_resp.width = width;
+	map_resp.height = height;
+
+	/* TODO: Read from /dev/asciimap instead of making up line of text */
+
+	char* line = "12345678901234567890\n";
+#define MSGLEN 50
+
+	char msg[MSGLEN] = {0};
+	int str_len = 0;
+	memset(&msg[str_len], SRV_MAP_CHAR, sizeof(char));
+	str_len += sizeof(char);
+	memcpy(&msg[str_len], &map_resp, sizeof(map_resp));
+	str_len += sizeof(map_resp);
+	strncat(&msg[str_len], line, MSGLEN - str_len - 1);
+	str_len += strlen(&msg[str_len]) + 1;
 
 	int n;
-	n = write(connfd, msg, acc);
+	n = write(connfd, msg, str_len);
 	if (n < 0)
 		fatal(NULL);
 
 #ifdef _DEBUG
 	printf("Received map request\n");
 	//printf("Wrote message: %s\n", msg);
-	write(STDOUT_FILENO, msg, acc);
-	printf("Message has length: %d\n", acc);
+	write(STDOUT_FILENO, msg, str_len);
+	printf("Message has length: %d\n", str_len);
 #endif
 
 	return 0;
@@ -141,9 +155,6 @@ int main(void)
 
 	while (1)
 	{
-		//char buf[1024 * 16] = {0};
-		//int buf_len = 0;
-
 		connfd = accept(sockfd,
 				(struct sockaddr *) &cli_addr,
 				&clilen);
@@ -176,63 +187,10 @@ int main(void)
 				}
 				break;
 			default:
-				respond_with_unknown_request_error(connfd, cmd);
+				respond_err(connfd, ECHAR);
 				break;
-				/* Respond with error */
 			}
 		}
 	}
 
-#if 0
-	while (1)
-	{
-		connfd = accept(sockfd,
-				(struct sockaddr *) &cli_addr,
-				&clilen);
-		if (connfd < 0)
-			fatal(NULL);
-
-		memset(&serv_addr, 0, sizeof(serv_addr));
-		n = read(connfd, &cli_req, sizeof(cli_request_t));
-		if (n < 0)
-			fatal(NULL);
-
-		/* Print request info */
-		{
-			printf("Request:\t%c\n", cli_req.cmd);
-			if (cli_req.cmd != 'M')
-			{
-				fprintf(stderr, "Request %c is invalid\n",
-						cli_req.cmd);
-			}
-			else
-			{
-				if (cli_req.width == 0)
-				{
-					printf("Width is 0. Will decide map size.\n");
-				}
-				else
-				{
-					printf("Width:\t\t%d\n", cli_req.width);
-					printf("Height:\t\t%d\n", cli_req.height);
-				}
-			}
-		}
-
-		/* Process request */
-		/* Read first character */
-		
-
-		/*
-		srv_response_t response;
-		generate_response(cli_req, &response);
-		*/
-		/* TODO: Write back to socket */
-
-		close(connfd);
-		sleep(1); /* I mean, how often do we get requests, really? */
-	}
-
-	return 0;
-#endif
 }
