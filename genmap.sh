@@ -41,7 +41,7 @@ function genMap {
 	for((i=0; i<$MAP_HEIGHT; i++)) do
 		for((j=0; j<$MAP_WIDTH; j++)) do
 			VAR="$(getValOrSpace)"
-			printf -v line "%c " "$VAR"
+			printf -v line "%c" "$VAR"
 			MAP_STR="$MAP_STR$line"
 		done
 		printf -v line "\n"
@@ -54,7 +54,7 @@ function genMap {
 echo "One moment, generating map..."
 MAP_STR=$(genMap)
 REAL_CHARS=$(echo -n $MAP_STR | tr -cd ' ' | wc -c)
-MIN_CHARS=$(( ($MAP_HEIGHT * $MAP_WIDTH) / 2))
+MIN_CHARS=$(( ($MAP_HEIGHT * $MAP_WIDTH) / 4))
 ITR=1
 
 while [ "$REAL_CHARS" -lt "$MIN_CHARS" ]

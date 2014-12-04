@@ -13,13 +13,11 @@
 #include <errno.h>
 #include <arpa/inet.h>
 
-
 void error(const char *msg)
 {
 	perror(msg);
 	exit(0);
 }
-
 
 int main(int argc, char *argv[])
 {
@@ -37,20 +35,25 @@ int main(int argc, char *argv[])
 		ip_addr = DEFAULT_IP;
 		req.height = 0;
 		req.width = 0;
-		
-		/*switch case magic to properly set things based on user */
-		switch(argc)
+		int opt;
+		while ((opt = getopt (argc, argv, "i:w:h:")) != -1)
 		{
-			case 5:
-				req.height = atoi(argv[4]);
-				req.width = atoi(argv[3]);
-			case 3:
-				ip_addr = argv[2];
-			case 2:
-				portno = atoi(argv[1]);
-				break;
+		    switch(opt)
+		    {
+			case 'i':
+				ip_addr = optarg;
+			break;
+			case 'w':
+				req.width = atoi(optarg);
+			break;
+			case 'h':
+				req.height = atoi(optarg);
+			break;
+			default:
+				printf("Usage: the -i, -w, and -h options correspond to ip, width and height respectively.\n");
+			break;
+		    }
 		}
-		
 
 	}
 
