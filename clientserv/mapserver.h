@@ -35,14 +35,12 @@ typedef struct srv_err_response_t
 	*/
 
 	int err_len;
-	char* err;
 } srv_err_response_t;
 
 typedef struct srv_map_response_t
 {
 	int width;
 	int height;
-	char* map;
 } srv_map_response_t;
 
 #endif /* MAPSERVER_H */

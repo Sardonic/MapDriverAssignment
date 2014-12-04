@@ -12,6 +12,12 @@
 /* Error messages returned to the client */
 const char* ERR_MSG = "ERROR: Malformed request.\n";
 
+static void fatal(const char* msg)
+{
+	perror(msg);
+	exit(1);
+}
+
 char* truncate_to_width(char* line, unsigned int width)
 {
 	if (strlen(line) <= width)
@@ -48,6 +54,9 @@ int respond_with_unknown_request_error(int connfd, char cmd)
 			SRV_ERR_CHAR,
 			cmd);
 	n = write(connfd, msg, strlen(msg) + 1);
+	if (n < 0)
+		fatal(NULL);
+
 #ifdef _DEBUG
 	printf("Unknown request error.\n");
 	printf("Wrote message: %s", msg);
@@ -64,6 +73,10 @@ int respond_to_map_request(int connfd, const cli_map_request_t* cli_req)
 
 	width = cli_req->width;
 	height = cli_req->height;
+	srv_map_response_t map_resp;
+
+	map_resp.width = width;
+	map_resp.height = height;
 	
 	/* Check message validity */
 	if (!is_request_good(cli_req))
@@ -77,28 +90,20 @@ int respond_to_map_request(int connfd, const cli_map_request_t* cli_req)
 		height = 50;
 	}
 
-	char* line = "1234567890\n";
-	char msg[50];
+	char* line = "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890\n";
+	char msg[50] = {0};
 	int acc = 0;
-	acc += snprintf(msg, 1, "%c", SRV_MAP_CHAR);
-	memcpy(&msg[acc], &width, sizeof(width));
-	//msg[acc] = width;
-	acc += sizeof(width);
-	memcpy(&msg[acc], &height, sizeof(height));
-	//msg[acc] = height;
-	acc += sizeof(height);
-	acc += snprintf(&msg[acc], 20, "%s", line);
-
+	memset(&msg[acc], SRV_MAP_CHAR, sizeof(char));
+	acc += sizeof(char);
+	memcpy(&msg[acc], &map_resp, sizeof(map_resp));
+	acc += sizeof(map_resp);
+	strncat(&msg[acc], line, 50 - acc);
+	acc += strlen(&msg[acc]);
 
 	int n;
-	/* Write the character */
-	/*
-	n = write(connfd, SRV_MAP_CHAR, 1);
-	n = write(connfd, &width, sizeof(width));
-	n = write(connfd, &height, sizeof(height));
-	n = write(connfd, line, strlen(line) + 1);
-	*/
 	n = write(connfd, msg, acc);
+	if (n < 0)
+		fatal(NULL);
 
 #ifdef _DEBUG
 	printf("Received map request\n");
@@ -110,107 +115,6 @@ int respond_to_map_request(int connfd, const cli_map_request_t* cli_req)
 	return 0;
 }
 
-/*
-bool is_request_good(const cli_request_t* cli_req)
-{
-	bool returnval = false;
-
-	if (cli_req->cmd != MAP_REQ_CHAR)
-		returnval = false;
-	else if (cli_req->width < 0)
-		returnval = false;
-	else if (cli_req->width != 0 && cli_req->height < 0)
-		returnval = false;
-	else
-		returnval = true;
-
-	return returnval;
-}
-*/
-
-/* generate_response(cli_request_t, srv_response_t*)
- * 
- * Fills out param 2 with the appropriate data to match
- * param 1.
- *
- * May require file descriptor to /dev/asciimap
- * */
-#if 0
-int generate_response(cli_request_t cli_req, srv_response_t* response)
-{
-	/* These defines cut down on the _ridiculous_ verbosity of the
-	 * struct->union.struct.data pattern */
-#define MAP_DATA response->data.map_data
-#define ERR_DATA response->data.err_data
-
-	if (is_request_good(&cli_req))
-	{
-#ifdef _DEBUG
-		printf("Received valid client request\n");
-#endif
-		int height = cli_req.height;
-		int width = cli_req.width;
-		response->type = MAP;
-
-		/* TODO: Respond differently if width == 0 */
-		MAP_DATA.width = width;
-		MAP_DATA.height = height;
-
-		/* Fill map buffer */
-		memset(MAP_DATA.map, '\0', BSIZE);
-
-		/* TODO: line should come from /dev/asciimap
-		 * And don't forget to NULL-terminate! */
-		char* line = "0123456789\n";
-
-		for (int i = 0; i < height; ++i)
-		{
-			line = truncate_to_width(line, width);
-			/* TODO: This copies a NULL-terminator, stopping the
-			 * string after the first line!! */
-			strcpy(MAP_DATA.map + (width * i), line);
-		}
-#ifdef _DEBUG
-		printf(
-				"Created response with:\n" \
-				"Type:\t\tMAP\n" \
-				"Width:\t\t%d\n" \
-				"Height:\t\t%d\n" \
-				"Data:\n%s\n",
-				MAP_DATA.width,
-				MAP_DATA.height,
-				MAP_DATA.map
-		      );
-#endif
-	}
-	else
-	{
-		response->type = ERR;
-		strcpy(ERR_DATA.err, ERR_MSG);
-		ERR_DATA.err_len = strlen(ERR_MSG);
-#ifdef _DEBUG
-		printf(
-				"Created response with:\n" \
-				"Type:\t\tERR\n" \
-				"Data:\n%s\n",
-				ERR_DATA.err
-		      );
-#endif
-	}
-
-#undef MAP_DATA
-#undef ERR_DATA
-
-	return 0;
-}
-#endif
-
-
-static void fatal(const char* msg)
-{
-	perror(msg);
-	exit(1);
-}
 
 int main(void)
 {
@@ -237,10 +141,15 @@ int main(void)
 
 	while (1)
 	{
+		//char buf[1024 * 16] = {0};
+		//int buf_len = 0;
+
 		connfd = accept(sockfd,
 				(struct sockaddr *) &cli_addr,
 				&clilen);
+#ifdef _DEBUG
 		printf("Received request\n");
+#endif
 
 		if (connfd < 0)
 			fatal(NULL);

@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
 		error("connect() error");
 
 	char msg[2];
-	snprintf(msg, 2, "%c", 'G');
+	snprintf(msg, 2, "%c", 'M');
 	n = write(sockfd, msg, 1);
 	n = write(sockfd,&req,sizeof(req));
 	if (n < 0) 
