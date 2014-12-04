@@ -24,13 +24,12 @@ int main(int argc, char *argv[])
 	int sockfd, portno, n;
 	struct sockaddr_in serv_addr;
 	struct hostent *server;
-	cli_request_t req;
+	cli_map_request_t req;
 	char *ip_addr;
 
 	/* Set up request */
 	{
 		/* set up the defaults */
-		req.cmd = MAP_REQ_CHAR;
 		portno = DEFAULT_PORT;
 		ip_addr = DEFAULT_IP;
 		req.height = 0;
@@ -38,6 +37,7 @@ int main(int argc, char *argv[])
 		int opt;
 		while ((opt = getopt (argc, argv, "i:w:h:")) != -1)
 		{
+
 		    switch(opt)
 		    {
 			case 'i':
@@ -53,14 +53,12 @@ int main(int argc, char *argv[])
 				printf("Usage: the -i, -w, and -h options correspond to ip, width and height respectively.\n");
 			break;
 		    }
-		}
-
 	}
 
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 		error("Could not create socket");
 
-	memset(&serv_addr, '0', sizeof(serv_addr));
+	memset(&serv_addr, 0, sizeof(serv_addr));
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_port = htons(portno);
 	if (inet_pton(AF_INET, ip_addr, &serv_addr.sin_addr) <= 0)
@@ -71,6 +69,9 @@ int main(int argc, char *argv[])
 			sizeof(serv_addr)) < 0)
 		error("connect() error");
 
+	char msg[2];
+	snprintf(msg, 2, "%c", 'M');
+	n = write(sockfd, msg, 1);
 	n = write(sockfd,&req,sizeof(req));
 	if (n < 0) 
 		error("ERROR writing to socket");
