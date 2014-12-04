@@ -6,23 +6,19 @@
 #define DEFAULT_PORT 23032
 #define DEFAULT_IP "127.0.0.1"
 
-#define MAP_REQ_CHAR 'M'
+#define CLI_MAP_CHAR 'M'
+#define SRV_ERR_CHAR 'E'
+#define SRV_MAP_CHAR 'M'
 
-typedef struct cli_request
+typedef struct cli_map_request
 {
-	char cmd; /* Command we want to do. Always 'M' for now */
 	int width; /* Map width. Zero if we don't care about size */
 	int height; /* Map height */
-} cli_request_t;
+} cli_map_request_t;
 
-typedef enum
+typedef struct srv_err_response_t
 {
-	MAP,
-	ERR
-} srv_response_type_t;
-
-typedef struct srv_response_t
-{
+	/*
 	srv_response_type_t type;
 	union
 	{
@@ -36,6 +32,17 @@ typedef struct srv_response_t
 			char map[BSIZE];
 		} map_data;
 	} data;
-} srv_response_t;
+	*/
+
+	int err_len;
+	char* err;
+} srv_err_response_t;
+
+typedef struct srv_map_response_t
+{
+	int width;
+	int height;
+	char* map;
+} srv_map_response_t;
 
 #endif /* MAPSERVER_H */

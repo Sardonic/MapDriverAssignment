@@ -22,6 +22,95 @@ char* truncate_to_width(char* line, unsigned int width)
 	return line;
 }
 
+bool is_request_good(const cli_map_request_t* cli_req)
+{
+	bool returnval = false;
+
+	if (cli_req->width < 0)
+		returnval = false;
+	else if (cli_req->width != 0 && cli_req->height < 0)
+		returnval = false;
+	else
+		returnval = true;
+
+	return returnval;
+}
+
+int respond_with_unknown_request_error(int connfd, char cmd)
+{
+	char msg[50] = {0};
+	int len = 0;
+	int n;
+
+	len = snprintf(msg,
+			50,
+			"%cERROR: Unrecognized command char: %c",
+			SRV_ERR_CHAR,
+			cmd);
+	n = write(connfd, msg, strlen(msg) + 1);
+#ifdef _DEBUG
+	printf("Unknown request error.\n");
+	printf("Wrote message: %s", msg);
+	printf("Message length: %d", len);
+#endif
+
+	return 0;
+}
+
+int respond_to_map_request(int connfd, const cli_map_request_t* cli_req)
+{
+	int width,
+	    height;
+
+	width = cli_req->width;
+	height = cli_req->height;
+	
+	/* Check message validity */
+	if (!is_request_good(cli_req))
+	{
+		return -1;
+	}
+
+	if (width == 0)
+	{
+		width = 50;
+		height = 50;
+	}
+
+	char* line = "1234567890\n";
+	char msg[50];
+	int acc = 0;
+	acc += snprintf(msg, 1, "%c", SRV_MAP_CHAR);
+	memcpy(&msg[acc], &width, sizeof(width));
+	//msg[acc] = width;
+	acc += sizeof(width);
+	memcpy(&msg[acc], &height, sizeof(height));
+	//msg[acc] = height;
+	acc += sizeof(height);
+	acc += snprintf(&msg[acc], 20, "%s", line);
+
+
+	int n;
+	/* Write the character */
+	/*
+	n = write(connfd, SRV_MAP_CHAR, 1);
+	n = write(connfd, &width, sizeof(width));
+	n = write(connfd, &height, sizeof(height));
+	n = write(connfd, line, strlen(line) + 1);
+	*/
+	n = write(connfd, msg, acc);
+
+#ifdef _DEBUG
+	printf("Received map request\n");
+	//printf("Wrote message: %s\n", msg);
+	write(STDOUT_FILENO, msg, acc);
+	printf("Message has length: %d\n", acc);
+#endif
+
+	return 0;
+}
+
+/*
 bool is_request_good(const cli_request_t* cli_req)
 {
 	bool returnval = false;
@@ -37,6 +126,7 @@ bool is_request_good(const cli_request_t* cli_req)
 
 	return returnval;
 }
+*/
 
 /* generate_response(cli_request_t, srv_response_t*)
  * 
@@ -45,6 +135,7 @@ bool is_request_good(const cli_request_t* cli_req)
  *
  * May require file descriptor to /dev/asciimap
  * */
+#if 0
 int generate_response(cli_request_t cli_req, srv_response_t* response)
 {
 	/* These defines cut down on the _ridiculous_ verbosity of the
@@ -112,6 +203,7 @@ int generate_response(cli_request_t cli_req, srv_response_t* response)
 
 	return 0;
 }
+#endif
 
 
 static void fatal(const char* msg)
@@ -125,7 +217,6 @@ int main(void)
 	int sockfd;
 	int connfd;
 	socklen_t clilen;
-	cli_request_t cli_req;
 	struct sockaddr_in serv_addr, cli_addr;
 	int n;
 
@@ -144,6 +235,46 @@ int main(void)
 	listen(sockfd, 5);
 	clilen = sizeof(cli_addr);
 
+	while (1)
+	{
+		connfd = accept(sockfd,
+				(struct sockaddr *) &cli_addr,
+				&clilen);
+		printf("Received request\n");
+
+		if (connfd < 0)
+			fatal(NULL);
+
+		memset(&serv_addr, 0, sizeof(serv_addr));
+
+		/* Identify request */
+		{
+			char cmd = 0;
+			n = read(connfd, &cmd, sizeof(cmd));
+			if (n < 0)
+				fatal(NULL);
+
+			printf("Command char: %c\n", cmd);
+			switch (cmd)
+			{
+			case 'M':
+				{
+					cli_map_request_t cli_req;
+					n = read(connfd, &cli_req, sizeof(cli_req));
+					if (n < 0)
+						fatal(NULL);
+					respond_to_map_request(connfd, &cli_req);
+				}
+				break;
+			default:
+				respond_with_unknown_request_error(connfd, cmd);
+				break;
+				/* Respond with error */
+			}
+		}
+	}
+
+#if 0
 	while (1)
 	{
 		connfd = accept(sockfd,
@@ -180,8 +311,13 @@ int main(void)
 		}
 
 		/* Process request */
+		/* Read first character */
+		
+
+		/*
 		srv_response_t response;
 		generate_response(cli_req, &response);
+		*/
 		/* TODO: Write back to socket */
 
 		close(connfd);
@@ -189,4 +325,5 @@ int main(void)
 	}
 
 	return 0;
+#endif
 }
