@@ -112,9 +112,10 @@ int respond_to_map_request(int connfd, const cli_map_request_t* cli_req)
 	n = read(mapfd, map, BSIZE);
 	if (n < 0)
 		fatal("Error reading /dev/asciimap");
+	close(mapfd);
 
 	//char* line = "12345678901234567890\n";
-#define MSGLEN 50
+#define MSGLEN 500
 
 	char msg[MSGLEN] = {0};
 	int str_len = 0;
