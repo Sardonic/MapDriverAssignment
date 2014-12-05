@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <fcntl.h>
 
 /* Error codes */
 #define ECHAR -1
@@ -102,7 +103,17 @@ int respond_to_map_request(int connfd, const cli_map_request_t* cli_req)
 
 	/* TODO: Read from /dev/asciimap instead of making up line of text */
 
-	char* line = "12345678901234567890\n";
+	int n;
+	char map[BSIZE];
+	int mapfd = open("/dev/asciimap", O_RDONLY);
+	if (mapfd < 0)
+		fatal("Error opening /dev/asciimap");
+
+	n = read(mapfd, map, BSIZE);
+	if (n < 0)
+		fatal("Error reading /dev/asciimap");
+
+	//char* line = "12345678901234567890\n";
 #define MSGLEN 50
 
 	char msg[MSGLEN] = {0};
@@ -111,10 +122,9 @@ int respond_to_map_request(int connfd, const cli_map_request_t* cli_req)
 	str_len += sizeof(char);
 	memcpy(&msg[str_len], &map_resp, sizeof(map_resp));
 	str_len += sizeof(map_resp);
-	strncat(&msg[str_len], line, MSGLEN - str_len - 1);
+	strncat(&msg[str_len], map, MSGLEN - str_len - 1);
 	str_len += strlen(&msg[str_len]) + 1;
 
-	int n;
 	n = write(connfd, msg, str_len);
 	if (n < 0)
 		fatal(NULL);
