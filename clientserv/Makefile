@@ -25,8 +25,8 @@ $(TEST_FORK_EXE):
 	$(CC) -c $(DEBUG) $(INCLUDE) $(FLAGS) $<
 
 start:
-	./$(EXE)
-
+	./$(SERV_EXE) &
+	netstat -vatn | grep 23032
 
 kill:
 	killall ./$(SERV_EXE)
