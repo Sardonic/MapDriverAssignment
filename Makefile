@@ -34,13 +34,7 @@ clean:
 
 rebuild:
 	make clean
-#RESULT=$(shell lsmod | grep asciimap | tail -1 | wc -l)
-#ifeq(1, ${RESULT})
 	sudo rmmod asciimap
-#if [`lsmod | grep asciimap | tail -1 | wc -l` -eq "1"]
-#then
-#fi
-#ifeq (,$(wildcard /dev/asciimap))
 	sudo rm /dev/asciimap
 	make all
 	make register

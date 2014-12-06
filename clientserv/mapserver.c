@@ -19,39 +19,27 @@
 #define ENEGHEIGHT -2
 #define ENEGWIDTH -3
 
+#define LOG_FILENAME "mapserver.log"
+
+int logfd = -1;
+
 const char* ERR_MSGS[] = {"ERROR: Unrecognized char",
 			"ERROR: Height is negative",
 			"ERROR: Width is negative"};
 
-static void fatal(const char* msg)
+void logmsg(const char* msg)
+{
+	if (logfd >= 0)
+		write(logfd, msg, strlen(msg));
+	write(logfd, "\n", 1);
+}
+
+void fatal(const char* msg)
 {
 	perror(msg);
+	if (msg != NULL)
+		logmsg(msg);
 	exit(1);
-}
-
-/* unsigned int linelen(char* str)
- *
- * returns length of the line, not including
- * the trailing newline character
- * */
-unsigned int linelen(char* str)
-{
-	unsigned int i;
-
-	while (*str && *str++ != '\n')
-		++i;
-
-	return i;
-}
-
-char* truncate_to_width(char* line, unsigned int width)
-{
-	if (linelen(line) <= width)
-		return line;
-
-	line[width] = '\n';
-
-	return line;
 }
 
 int is_request_good(const cli_map_request_t* cli_req)
@@ -75,12 +63,26 @@ int respond_err(int connfd, int err)
 	int index;
 	index = err * -1 - 1;
 
-	/* TODO: Write message length to socket */
+	srv_err_response_t srv_resp;
+	srv_resp.err_len = strlen(ERR_MSGS[index]);
 	strncpy(msg, ERR_MSGS[index], 50);
+
+	n = write(connfd, &srv_resp, sizeof(srv_resp));
+	if (n < 0)
+		fatal(NULL);
 
 	n = write(connfd, msg, strlen(msg) + 1);
 	if (n < 0)
 		fatal(NULL);
+
+	logmsg("Responded to error with message.");
+
+	/* Log extra info */
+	{
+		char errmsg[50] = {0};
+		snprintf(errmsg, 50, strncat("Error message: ", ERR_MSGS[index], 35));
+		logmsg(errmsg);
+	}
 
 #ifdef _DEBUG
 	printf("Wrote message: %s\n", msg);
@@ -139,12 +141,15 @@ int respond_to_map_request(int connfd, const cli_map_request_t* cli_req)
 	/* The number of characters to write to the socket */
 	int str_len = 0;
 
+	/* The actual length of the map to write */
+	int map_len = 0;
+
 	memset(&msg[str_len], SRV_MAP_CHAR, sizeof(char));
 	str_len += sizeof(char);
 	memcpy(&msg[str_len], &map_resp, sizeof(map_resp));
 	str_len += sizeof(map_resp);
-	/* TODO: This is still kind of ugly? */
-	int map_len = MIN(MSGLEN - str_len - 1, (width + 1) * height);
+
+	map_len = MIN(MSGLEN - str_len - 1, (width + 1) * height);
 
 	/* Cut up the lines until they're the correct width */
 	{
@@ -197,6 +202,7 @@ int respond_to_map_request(int connfd, const cli_map_request_t* cli_req)
 		/* Parent */
 		else
 		{
+			int err = 0;
 			wait(NULL);
 
 			/* Clean up the mess we made for the child */
@@ -207,7 +213,7 @@ int respond_to_map_request(int connfd, const cli_map_request_t* cli_req)
 
 			close(fd);
 
-			/* Now read it */
+			/* Now read our lovely new map file */
 			fd = open("map4client.map", O_RDONLY);
 
 			n = read(fd, map, map_len);
@@ -216,8 +222,12 @@ int respond_to_map_request(int connfd, const cli_map_request_t* cli_req)
 
 			close(fd);
 
-			unlink("map4client.map");
-			unlink("tmp.map");
+			err = unlink("map4client.map");
+			if (err < 0)
+				fatal("Unable to unlink map4client.map");
+			err = unlink("tmp.map");
+			if (err < 0)
+				fatal("Unable to unlink tmp.map");
 		}
 	}
 
@@ -237,6 +247,13 @@ int respond_to_map_request(int connfd, const cli_map_request_t* cli_req)
 	printf("Message has length: %d\n", str_len);
 #endif
 
+	/* Handle logging */
+	{
+		char loginfo[80] = {0};
+		snprintf(loginfo, 80, "Responded to map request with width %d and height %d", width, height);
+		logmsg(loginfo);
+	}
+
 	return 0;
 }
 
@@ -248,6 +265,9 @@ int main(void)
 	socklen_t clilen;
 	struct sockaddr_in serv_addr, cli_addr;
 	int n;
+
+	/* init logging */
+	logfd = open(LOG_FILENAME, O_TRUNC | O_CREAT | O_WRONLY, S_IRWXU); 
 
 	sockfd = socket(AF_INET, SOCK_STREAM, 0);
 	if (sockfd < 0)
@@ -291,25 +311,30 @@ int main(void)
 				if (n < 0)
 					fatal(NULL);
 
+#ifdef _DEBUG
 				printf("Command char: %c\n", cmd);
+#endif
 				switch (cmd)
 				{
 				case 'M':
 					{
+						logmsg("Received map request.");
 						cli_map_request_t cli_req;
 						n = read(connfd, &cli_req, sizeof(cli_req));
 						if (n < 0)
 							fatal(NULL);
 						respond_to_map_request(connfd, &cli_req);
+						logmsg("Successfully responded to map request.");
 					}
 					break;
 				default:
-					{
-						respond_err(connfd, ECHAR);
-					}
+					logmsg("Received unrecognized request.");
+					respond_err(connfd, ECHAR);
+					logmsg("Successfully responded to unrecognized request.");
 					break;
 				}
 
+				logmsg("Closing connection.");
 				close(connfd);
 #ifdef _DEBUG
 				printf("Child, signing off!\n");
@@ -324,5 +349,8 @@ int main(void)
 			}
 		}
 	}
+
+	/* Stop logging */
+	close(logfd);
 
 }
