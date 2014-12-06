@@ -109,11 +109,11 @@ int main(int argc, char *argv[])
 		while((n = read(sockfd, buff, BUF_SIZE - 1)) > 0)
 		{
 			buff[n] = 0;
-			fprintf(stderr, "%s", buff);
+			fprintf(stderr, "%s\n", buff);
 		}
 		if (n < 0)
 		{
-			fprintf(stderr, "Error");
+			fprintf(stderr, "Error\n");
 		}
 	}
 
