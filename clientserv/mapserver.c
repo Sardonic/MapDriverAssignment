@@ -232,7 +232,7 @@ int respond_to_map_request(int connfd, const cli_map_request_t* cli_req)
 
 #ifdef _DEBUG
 	printf("Received map request\n");
-	//printf("Wrote message: %s\n", msg);
+	printf("Wrote message:\n");
 	write(STDOUT_FILENO, msg, str_len);
 	printf("Message has length: %d\n", str_len);
 #endif
@@ -280,26 +280,47 @@ int main(void)
 
 		/* Identify request */
 		{
-			char cmd = 0;
-			n = read(connfd, &cmd, sizeof(cmd));
-			if (n < 0)
-				fatal(NULL);
-
-			printf("Command char: %c\n", cmd);
-			switch (cmd)
+			pid_t pid = fork();
+			if (pid == 0)
 			{
-			case 'M':
+#ifdef _DEBUG
+				printf("Child, here!\n");
+#endif
+				char cmd = 0;
+				n = read(connfd, &cmd, sizeof(cmd));
+				if (n < 0)
+					fatal(NULL);
+
+				printf("Command char: %c\n", cmd);
+				switch (cmd)
 				{
-					cli_map_request_t cli_req;
-					n = read(connfd, &cli_req, sizeof(cli_req));
-					if (n < 0)
-						fatal(NULL);
-					respond_to_map_request(connfd, &cli_req);
+				case 'M':
+					{
+						cli_map_request_t cli_req;
+						n = read(connfd, &cli_req, sizeof(cli_req));
+						if (n < 0)
+							fatal(NULL);
+						respond_to_map_request(connfd, &cli_req);
+					}
+					break;
+				default:
+					{
+						respond_err(connfd, ECHAR);
+					}
+					break;
 				}
-				break;
-			default:
-				respond_err(connfd, ECHAR);
-				break;
+
+				close(connfd);
+#ifdef _DEBUG
+				printf("Child, signing off!\n");
+#endif
+				exit(0);
+			}
+			else if (pid < 0)
+				fatal("fork error");
+			else
+			{
+				close(connfd);
 			}
 		}
 	}
