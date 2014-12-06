@@ -73,6 +73,8 @@ int main(int argc, char* argv[])
 				char* carvedMap = carveFile(argv[i], atoi(width), atoi(height), line);
 
 				printf("%s", carvedMap);
+
+				free(carvedMap);
 				exit(0);
 			}
 			else
