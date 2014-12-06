@@ -77,6 +77,45 @@ int main(int argc, char *argv[])
 	if (n < 0) 
 		error("ERROR writing to socket");
 
-	close(sockfd);
+	char responseType;
+	read(sockfd, &responseType, 1); /* read response type */
 
+	if(responseType == 'M')
+	{
+		srv_map_response_t mapResponse;
+		read(sockfd, &mapResponse, sizeof(mapResponse)); /* get width and height */
+
+		int BUF_SIZE = mapResponse.width;
+		char buff[BUF_SIZE];
+		read(sockfd, buff, BUF_SIZE + 1); /* read remaining garbage bytes */
+
+		while((n = read(sockfd, buff, BUF_SIZE - 1)) > 0)
+		{
+			buff[n] = 0;
+			printf("%s", buff);
+		}
+		if (n < 0)
+		{
+			fprintf(stderr, "Error");
+		}
+	}
+	else
+	{
+		srv_err_response_t errorResponse;
+		read(sockfd, &errorResponse, sizeof(errorResponse)); /* get error response size */
+
+		int BUF_SIZE = errorResponse.err_len;
+		char buff[BUF_SIZE];
+		while((n = read(sockfd, buff, BUF_SIZE - 1)) > 0)
+		{
+			buff[n] = 0;
+			fprintf(stderr, "%s", buff);
+		}
+		if (n < 0)
+		{
+			fprintf(stderr, "Error");
+		}
+	}
+
+	close(sockfd);
 }
