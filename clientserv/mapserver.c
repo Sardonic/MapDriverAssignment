@@ -29,31 +29,6 @@ static void fatal(const char* msg)
 	exit(1);
 }
 
-/* unsigned int linelen(char* str)
- *
- * returns length of the line, not including
- * the trailing newline character
- * */
-unsigned int linelen(char* str)
-{
-	unsigned int i;
-
-	while (*str && *str++ != '\n')
-		++i;
-
-	return i;
-}
-
-char* truncate_to_width(char* line, unsigned int width)
-{
-	if (linelen(line) <= width)
-		return line;
-
-	line[width] = '\n';
-
-	return line;
-}
-
 int is_request_good(const cli_map_request_t* cli_req)
 {
 	int returnval = 0;
@@ -76,7 +51,13 @@ int respond_err(int connfd, int err)
 	index = err * -1 - 1;
 
 	/* TODO: Write message length to socket */
+	srv_err_response_t srv_resp;
+	srv_resp.err_len = strlen(ERR_MSGS[index]);
 	strncpy(msg, ERR_MSGS[index], 50);
+
+	n = write(connfd, &srv_resp, sizeof(srv_resp));
+	if (n < 0)
+		fatal(NULL);
 
 	n = write(connfd, msg, strlen(msg) + 1);
 	if (n < 0)
