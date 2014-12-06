@@ -67,6 +67,10 @@ int respond_err(int connfd, int err)
 	srv_resp.err_len = strlen(ERR_MSGS[index]);
 	strncpy(msg, ERR_MSGS[index], 50);
 
+	n = write(connfd, "E", 1);
+	if (n < 0)
+		fatal(NULL);
+
 	n = write(connfd, &srv_resp, sizeof(srv_resp));
 	if (n < 0)
 		fatal(NULL);
