@@ -54,10 +54,14 @@ int main(int argc, char* argv[])
 		}
 		else /* parent */
 		{
+#ifdef DEBUG
 			printf("This kid's PID: %d\n", pid);
 			printf("I will bravely wait for my children!\n");
+#endif
 			wait(NULL);
+#ifdef DEBUG
 			printf("Finally rid of those brats\n");
+#endif
 		}
 	}
 	else
@@ -79,16 +83,21 @@ int main(int argc, char* argv[])
 			}
 			else
 			{
+#ifdef DEBUG
 				printf("This kid's PID: %d\n", pid);
+#endif
 			}
 		}
 
 		/* only parent gets here, child has already exited */
+#ifdef DEBUG
 		printf("I will bravely wait for my children!\n");
+#endif
 
 		while(wait(NULL) > 0){}
-
+#ifdef DEBUG
 		printf("Finally rid of those brats\n");
+#endif
 	}
 
 	exit(0);
@@ -191,5 +200,5 @@ char* carveFile(char* fileName, int width, int height, int lineNum)
 
 void printArgUsage()
 {
-	printf("Invalid arg.\nValid args are -w (width), -h (height), -l (line)\n");
+	fprintf(stderr, "Invalid arg.\nValid args are -w (width), -h (height), -l (line)\n");
 }
