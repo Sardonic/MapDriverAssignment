@@ -3,6 +3,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <getopt.h>
@@ -107,7 +108,7 @@ char* carveFile(char* fileName, int width, int height, int lineNum)
 {
 	FILE* fileDesc;
 	char* mapLine;
-	if(fileDesc = fopen(fileName, "r"))
+	if((fileDesc = fopen(fileName, "r")))
 	{
 
 		/* seek to lineNum */
@@ -133,7 +134,7 @@ char* carveFile(char* fileName, int width, int height, int lineNum)
 		int writeEnd;
 
 		int itr = 1; /* counts current row */
-		while(read = getline(&line, &len, fileDesc) != -1 && itr <= height)
+		while((read = getline(&line, &len, fileDesc)) != -1 && itr <= height)
 		{
 			strncat(mapLine, line, width);
 
