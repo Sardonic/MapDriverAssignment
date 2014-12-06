@@ -77,6 +77,11 @@ Currently it counts tabs as one char, causing the map to appear misaligned.
 This may or may not be a bug, but I'm going to fix it anyway, as I don't
 like how it looks.
 
+UPDATE:
+All characters besides newline which are lower on the ascii table than
+space are now turned into spaces, this was the easiest solution that looks
+decent.
+
 ===========================================================================
 4.0 Components
 ===========================================================================

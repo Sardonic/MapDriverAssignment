@@ -16,7 +16,7 @@ int main(int argc, char* argv[])
 	int option = 0;
 	char* width = "10";
 	char* height = "10";
-	int line = 1;
+	int line = 0;
 
 	while((option = getopt(argc, argv, "w:h:l:")) != -1)
 	{
@@ -92,13 +92,24 @@ int main(int argc, char* argv[])
 	exit(0);
 }
 
-/* TODO: implement starting at a line and figure out tabs */
 char* carveFile(char* fileName, int width, int height, int lineNum)
 {
 	FILE* fileDesc;
 	char* mapLine;
 	if(fileDesc = fopen(fileName, "r"))
 	{
+
+		/* seek to lineNum */
+		char* tempLine = NULL;
+		size_t tempLen = 0;
+
+		int i = 0; 
+		for(; i < lineNum; ++i)
+		{
+			getline(&tempLine, &tempLen, fileDesc);
+		}	
+
+		/* create the map */
 		int mapSize = width * height + height + 1;
 		mapLine = (char*)malloc(mapSize); /* allocate buffer */
 		memset(mapLine, 0, mapSize); /* zero out buffer */
@@ -114,6 +125,18 @@ char* carveFile(char* fileName, int width, int height, int lineNum)
 		while(read = getline(&line, &len, fileDesc) != -1 && itr <= height)
 		{
 			strncat(mapLine, line, width);
+
+			/* turn tabs into spaces */
+			char *currentCharItr = mapLine;
+			while(*currentCharItr)
+			{
+				if(*currentCharItr < 32 && *currentCharItr != '\n') /* is it lower than space and not newline? */
+				{
+					*currentCharItr = ' '; /* set it to space */
+				}
+
+				currentCharItr++;
+			}
 
 			writeStart = width * (itr - 1) + (itr - 1);
 			writeEnd = width * itr + (itr - 1);
@@ -151,8 +174,10 @@ char* carveFile(char* fileName, int width, int height, int lineNum)
 			}
 		}
 
-		/* Reached EOF, print values */
+		/* Reached EOF, free resources and print values */
 		fclose(fileDesc);
+		free(line);
+		free(tempLine);
 	}
 	else
 	{
