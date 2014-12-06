@@ -67,7 +67,7 @@ int respond_err(int connfd, int err)
 	srv_resp.err_len = strlen(ERR_MSGS[index]);
 	strncpy(msg, ERR_MSGS[index], 50);
 
-	n = write(connfd, "E", 1);
+	n = write(connfd, SRV_ERR_CHAR, 1);
 	if (n < 0)
 		fatal(NULL);
 
@@ -83,8 +83,9 @@ int respond_err(int connfd, int err)
 
 	/* Log extra info */
 	{
-		char errmsg[50] = {0};
-		snprintf(errmsg, 50, strncat("Error message: ", ERR_MSGS[index], 35));
+		char errmsg[80] = {0};
+		strncpy(errmsg, ERR_MSGS[index], 79);
+		logmsg("Error message:");
 		logmsg(errmsg);
 	}
 
@@ -148,7 +149,7 @@ int respond_to_map_request(int connfd, const cli_map_request_t* cli_req)
 	/* The actual length of the map to write */
 	int map_len = 0;
 
-	memset(&msg[str_len], SRV_MAP_CHAR, sizeof(char));
+	memset(&msg[str_len], SRV_MAP_CHAR[0], sizeof(char));
 	str_len += sizeof(char);
 	memcpy(&msg[str_len], &map_resp, sizeof(map_resp));
 	str_len += sizeof(map_resp);

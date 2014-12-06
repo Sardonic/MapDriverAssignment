@@ -7,8 +7,8 @@
 #define DEFAULT_IP "127.0.0.1"
 
 #define CLI_MAP_CHAR 'M'
-#define SRV_ERR_CHAR 'E'
-#define SRV_MAP_CHAR 'M'
+#define SRV_ERR_CHAR "E"
+#define SRV_MAP_CHAR "M"
 
 typedef struct cli_map_request
 {
