@@ -22,3 +22,6 @@ clientserv/a.out
 clientserv/mapserver
 clientserv/a.out
 *.o
+asciimap.ko
+testForkExec
+clientserv/tags
