@@ -159,6 +159,17 @@ int respond_to_map_request(int connfd, const cli_map_request_t* cli_req)
 		/* Close the file for someone else to use */
 		close(fd);
 
+		/* Create a file for the other program to write to */
+		fd = creat("map4client.map", S_IRWXU);
+
+		/* Save our stdout so we don't lose it */
+		int save_out = dup(STDOUT_FILENO);
+
+		/* dup2 stdout -- writing to stdout won't work until we set
+		 * this back to normal. */
+		if (-1 == dup2(fd, STDOUT_FILENO))
+			fatal("Failed to redirect stdout");
+
 		/* Get ready to spawn a new process... */
 		pid_t pid = fork();
 
@@ -187,8 +198,26 @@ int respond_to_map_request(int connfd, const cli_map_request_t* cli_req)
 		else
 		{
 			wait(NULL);
-			/* Now read it */
 
+			/* Clean up the mess we made for the child */
+			fflush(stdout);
+			close(fd);
+
+			dup2(save_out, STDOUT_FILENO);
+
+			close(fd);
+
+			/* Now read it */
+			fd = open("map4client.map", O_RDONLY);
+
+			n = read(fd, map, map_len);
+			if (n < 0)
+				fatal("Error reading map");
+
+			close(fd);
+
+			unlink("map4client.map");
+			unlink("tmp.map");
 		}
 	}
 
