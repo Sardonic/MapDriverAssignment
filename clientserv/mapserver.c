@@ -280,14 +280,20 @@ int main(void)
 
 		/* Identify request */
 		{
-			char cmd = 0;
-			n = read(connfd, &cmd, sizeof(cmd));
-			if (n < 0)
-				fatal(NULL);
-
-			printf("Command char: %c\n", cmd);
-			switch (cmd)
+			pid_t pid = fork();
+			if (pid == 0)
 			{
+#ifdef _DEBUG
+				printf("Child, here!\n");
+#endif
+				char cmd = 0;
+				n = read(connfd, &cmd, sizeof(cmd));
+				if (n < 0)
+					fatal(NULL);
+
+				printf("Command char: %c\n", cmd);
+				switch (cmd)
+				{
 				case 'M':
 					{
 						cli_map_request_t cli_req;
@@ -302,10 +308,21 @@ int main(void)
 						respond_err(connfd, ECHAR);
 					}
 					break;
-			}
+				}
 
+				close(connfd);
+#ifdef _DEBUG
+				printf("Child, signing off!\n");
+#endif
+				exit(0);
+			}
+			else if (pid < 0)
+				fatal("fork error");
+			else
+			{
+				close(connfd);
+			}
 		}
-		close(connfd);
 	}
 
 }
