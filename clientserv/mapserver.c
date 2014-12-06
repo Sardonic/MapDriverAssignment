@@ -3,12 +3,16 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <sys/socket.h>
+#include <sys/wait.h>
 #include <netinet/in.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <fcntl.h>
+
+#define MIN(a, b) (a < b ? a : b)
 
 /* Error codes */
 #define ECHAR -1
@@ -25,9 +29,24 @@ static void fatal(const char* msg)
 	exit(1);
 }
 
+/* unsigned int linelen(char* str)
+ *
+ * returns length of the line, not including
+ * the trailing newline character
+ * */
+unsigned int linelen(char* str)
+{
+	unsigned int i;
+
+	while (*str && *str++ != '\n')
+		++i;
+
+	return i;
+}
+
 char* truncate_to_width(char* line, unsigned int width)
 {
-	if (strlen(line) <= width)
+	if (linelen(line) <= width)
 		return line;
 
 	line[width] = '\n';
@@ -101,8 +120,6 @@ int respond_to_map_request(int connfd, const cli_map_request_t* cli_req)
 	map_resp.width = width;
 	map_resp.height = height;
 
-	/* TODO: Read from /dev/asciimap instead of making up line of text */
-
 	int n;
 	char map[BSIZE];
 	int mapfd = open("/dev/asciimap", O_RDONLY);
@@ -114,21 +131,75 @@ int respond_to_map_request(int connfd, const cli_map_request_t* cli_req)
 		fatal("Error reading /dev/asciimap");
 	close(mapfd);
 
-	//char* line = "12345678901234567890\n";
-#define MSGLEN 500
+#define MSGLEN (BSIZE + 50)
 
+	/* The complete message to write to the socket */
 	char msg[MSGLEN] = {0};
+
+	/* The number of characters to write to the socket */
 	int str_len = 0;
+
 	memset(&msg[str_len], SRV_MAP_CHAR, sizeof(char));
 	str_len += sizeof(char);
 	memcpy(&msg[str_len], &map_resp, sizeof(map_resp));
 	str_len += sizeof(map_resp);
-	strncat(&msg[str_len], map, MSGLEN - str_len - 1);
+	/* TODO: This is still kind of ugly? */
+	int map_len = MIN(MSGLEN - str_len - 1, (width + 1) * height);
+
+	/* Cut up the lines until they're the correct width */
+	{
+		/* Create a file for the other program to read */
+		int fd = creat("tmp.map", S_IRWXU);
+		if (fd < 0)
+			fatal("Could not create tmp.map");
+
+		/* Write to the new file */
+		write(fd, map, strlen(map));
+
+		/* Close the file for someone else to use */
+		close(fd);
+
+		/* Get ready to spawn a new process... */
+		pid_t pid = fork();
+
+		/* Child */
+		if (pid == 0)
+		{
+			char* new_argv[5];
+			char arg1[20] = {0};
+			char arg2[20] = {0};
+			char arg3[20] = {0};
+
+			snprintf(arg1, 20, "-w%d", width);
+			snprintf(arg2, 20, "-h%d", height);
+			snprintf(arg3, 20, "tmp.map");
+
+			new_argv[0] = "../testForkExec";
+			new_argv[1] = arg1;
+			new_argv[2] = arg2;
+			new_argv[3] = arg3;
+			new_argv[4] = NULL;
+
+			execve("../testForkExec", new_argv, NULL);
+			fatal("execve failed");
+		}
+		/* Parent */
+		else
+		{
+			wait(NULL);
+			/* Now read it */
+
+		}
+	}
+
+	strncat(&msg[str_len], map, map_len);
 	str_len += strlen(&msg[str_len]) + 1;
 
 	n = write(connfd, msg, str_len);
 	if (n < 0)
 		fatal(NULL);
+
+#undef MSGLEN
 
 #ifdef _DEBUG
 	printf("Received map request\n");
