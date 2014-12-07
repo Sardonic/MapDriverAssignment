@@ -18,14 +18,22 @@
 #define ECHAR -1
 #define ENEGHEIGHT -2
 #define ENEGWIDTH -3
+#define EINVALWIDTH -4
+#define EINVALHEIGHT -5
+#define EINVALKILLCHAR -6
 
 #define LOG_FILENAME "mapserver.log"
+
+#define MAX_ERR_MSG_LEN 100
 
 int logfd = -1;
 
 const char* ERR_MSGS[] = {"ERROR: Unrecognized char",
 			"ERROR: Height is negative",
-			"ERROR: Width is negative"};
+			"ERROR: Width is negative",
+			"ERROR: Invalid width",
+			"ERROR: Invalid height",
+			"ERROR: Invalid char at location"};
 
 typedef struct map_data_t {
 	char* map;
@@ -64,14 +72,14 @@ int is_request_good(const cli_map_request_t* cli_req)
 
 int respond_err(int connfd, int err)
 {
-	char msg[50] = {0};
+	char msg[MAX_ERR_MSG_LEN] = {0};
 	int n;
 	int index;
 	index = err * -1 - 1;
 
 	srv_err_response_t srv_resp;
 	srv_resp.err_len = strlen(ERR_MSGS[index]);
-	strncpy(msg, ERR_MSGS[index], 50);
+	strncpy(msg, ERR_MSGS[index], MAX_ERR_MSG_LEN);
 
 	n = write(connfd, SRV_ERR_CHAR, 1);
 	if (n < 0)
@@ -89,8 +97,8 @@ int respond_err(int connfd, int err)
 
 	/* Log extra info */
 	{
-		char errmsg[80] = {0};
-		strncpy(errmsg, ERR_MSGS[index], 79);
+		char errmsg[MAX_ERR_MSG_LEN] = {0};
+		strncpy(errmsg, ERR_MSGS[index], MAX_ERR_MSG_LEN - 1);
 		logmsg("Error message:");
 		logmsg(errmsg);
 	}
@@ -149,7 +157,7 @@ int respond_to_map_request(int connfd, const cli_map_request_t* cli_req, map_dat
 		fatal("Error reading /dev/asciimap");
 	close(mapfd);
 
-#define MSGLEN (BSIZE + 50)
+#define MSGLEN (BSIZE + sizeof(srv_map_response_t))
 
 	/* The complete message to write to the socket */
 	char msg[MSGLEN] = {0};
@@ -291,11 +299,11 @@ int kill_map_char(cli_kill_request_t kill_req, map_data_t map)
 	}
 
 	if (map.map[kill_req.x + (kill_req.y * count)] != kill_req.charToKill)
-		return -1;
+		return EINVALKILLCHAR;
 	else if (map.width < kill_req.x)
-		return -1;
+		return EINVALWIDTH;
 	else if (map.height < kill_req.y)
-		return -1;
+		return EINVALHEIGHT;
 
 	map.map[kill_req.x + (kill_req.y * count)] = ' ';
 	printf("%s\n", map.map);
@@ -383,17 +391,25 @@ int main(void)
 					case 'K':
 						{
 							logmsg("Received kill request.");
+							int err;
 							cli_kill_request_t cli_kill;
 							n = read(connfd, &cli_kill, sizeof(cli_kill));
 							if (n < 0)
 								fatal(NULL);
-							kill_map_char(cli_kill, map);
+							err = kill_map_char(cli_kill, map);
+							if (err < 0)
+							{
+								respond_err(connfd, err);
+							}
 							logmsg("Successfully killed the character.");
 						}
 						break;
 					case 'G':
 						{
 							bGameOver = true;
+							printf("Game Over for Client %d %s %d\n", connfd, DEFAULT_IP, DEFAULT_PORT);
+							/* TODO: mapfd needs to be in scope :/ */
+							//ioctl(mapfd, IOCTL_RESET_MAP);
 						}
 						break;
 					default:
