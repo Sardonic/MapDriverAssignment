@@ -54,52 +54,52 @@ typedef struct _driver_status
 
 const char* string =
 		"                                                 \n" \
-		"   sss                                           \n" \
-		"  sss                                            \n" \
-		"   sss                                           \n" \
-		"  sss                                            \n" \
+		"   SSS                                           \n" \
+		"  SSS                                            \n" \
+		"   SSS                                           \n" \
+		"  SSS                                            \n" \
 		"                                                 \n" \
-		"   aaa                                           \n" \
-		"  aa aa                                          \n" \
-		"  aaaaa                                          \n" \
-		"  aaaaa                                          \n" \
-		"  aa aa                                          \n" \
+		"   AAA                                           \n" \
+		"  AA AA                                          \n" \
+		"  AAAAA                                          \n" \
+		"  AAAAA                                          \n" \
+		"  AA AA                                          \n" \
 		"                                                 \n" \
-		"  bbb                                            \n" \
-		"  b bb                                           \n" \
-		"  bbb                                            \n" \
-		"  b bb                                           \n" \
-		"  bbb                                            \n" \
+		"  BBB                                            \n" \
+		"  B BB                                           \n" \
+		"  BBB                                            \n" \
+		"  B BB                                           \n" \
+		"  BBB                                            \n" \
 		"                                                 \n" \
-		"             jjjjjj                              \n" \
-		"               jj                                \n" \
-		"               jj                                \n" \
-		"            jj jj                                \n" \
-		"             jjj                                 \n" \
+		"             JJJJJJ                              \n" \
+		"               JJ                                \n" \
+		"               JJ                                \n" \
+		"            JJ JJ                                \n" \
+		"             JJJ                                 \n" \
 		"                                                 \n" \
-		"              aaaa                               \n" \
-		"             aa  aa                              \n" \
-		"             aaaaaa                              \n" \
-		"             aaaaaa                              \n" \
-		"             aa  aa                              \n" \
-		"                            ddddd                \n" \
-		"              sss           dd ddd               \n" \
-		"             sss            dd  ddd              \n" \
-		"              sss           dd ddd               \n" \
-		"             sss            ddddd                \n" \
+		"              AAAA                               \n" \
+		"             AA  AA                              \n" \
+		"             AAAAAA                              \n" \
+		"             AAAAAA                              \n" \
+		"             AA  AA                              \n" \
+		"                            DDDDD                \n" \
+		"              SSS           DD DDD               \n" \
+		"             SSS            DD  DDD              \n" \
+		"              SSS           DD DDD               \n" \
+		"             SSS            DDDDD                \n" \
 		"                                                 \n" \
-		"                            kk  kk               \n" \
-		"                            kk kk                \n" \
-		"                            kkkk                 \n" \
-		"                            kkkk                 \n" \
-		"                            kk kk                \n" \
-		"                            kk  kk               \n" \
+		"                            KK  KK               \n" \
+		"                            KK KK                \n" \
+		"                            KKKK                 \n" \
+		"                            KKKK                 \n" \
+		"                            KK KK                \n" \
+		"                            KK  KK               \n" \
 		"                                                 \n" \
-		"                             jjjjjj              \n" \
-		"                               jj                \n" \
-		"                               jj                \n" \
-		"                            jj jj                \n" \
-		"                             jjj                 \n" \
+		"                             JJJJJJ              \n" \
+		"                               JJ                \n" \
+		"                               JJ                \n" \
+		"                            JJ JJ                \n" \
+		"                             JJJ                 \n" \
 		"                                                 \n" \
 		"                                                 \n" \
 		"-------------------------------------------------\n";
