@@ -87,7 +87,6 @@ char* retrieveMap(int sockfd, int* mapWidth, int* mapHeight)
 		*mapHeight = mapResponse.height;
 		const int BUF_SIZE = mapResponse.width;
 		char buff[BUF_SIZE];
-		read(sockfd, buff, BUF_SIZE + 1); /* read remaining garbage bytes */
 
 		/* map size + all the newlines + null terminator */
 		const int FULL_MAP_SIZE = (BUF_SIZE * mapResponse.height) + mapResponse.height + 1; 

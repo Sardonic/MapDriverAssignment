@@ -27,6 +27,12 @@ const char* ERR_MSGS[] = {"ERROR: Unrecognized char",
 			"ERROR: Height is negative",
 			"ERROR: Width is negative"};
 
+typedef struct map_data_t {
+	char* map;
+	int width;
+	int height;
+} map_data_t;
+
 void logmsg(const char* msg)
 {
 	if (logfd >= 0)
@@ -97,7 +103,7 @@ int respond_err(int connfd, int err)
 	return 0;
 }
 
-int respond_to_map_request(int connfd, const cli_map_request_t* cli_req, char** outputMap)
+int respond_to_map_request(int connfd, const cli_map_request_t* cli_req, map_data_t* outputMap)
 {
 	int width,
 	    height;
@@ -115,7 +121,7 @@ int respond_to_map_request(int connfd, const cli_map_request_t* cli_req, char** 
 		printf("Problem with map request\n");
 #endif
 		respond_err(connfd, err);
-		return -1;
+		return err;
 	}
 
 	if (width == 0)
@@ -127,15 +133,18 @@ int respond_to_map_request(int connfd, const cli_map_request_t* cli_req, char** 
 	map_resp.width = width;
 	map_resp.height = height;
 
+	outputMap->width = width;
+	outputMap->height = height;
+
 	int n;
-	*outputMap = malloc(BSIZE);
-	memset(*outputMap, 0, BSIZE);
+	outputMap->map = malloc(BSIZE);
+	memset(outputMap->map, 0, BSIZE);
 
 	int mapfd = open("/dev/asciimap", O_RDONLY);
 	if (mapfd < 0)
 		fatal("Error opening /dev/asciimap");
 
-	n = read(mapfd, *outputMap, BSIZE);
+	n = read(mapfd, outputMap->map, BSIZE);
 	if (n < 0)
 		fatal("Error reading /dev/asciimap");
 	close(mapfd);
@@ -166,7 +175,7 @@ int respond_to_map_request(int connfd, const cli_map_request_t* cli_req, char** 
 			fatal("Could not create tmp.map");
 
 		/* Write to the new file */
-		write(fd, *outputMap, strlen(*outputMap));
+		write(fd, outputMap->map, strlen(outputMap->map));
 
 		/* Close the file for someone else to use */
 		close(fd);
@@ -223,8 +232,8 @@ int respond_to_map_request(int connfd, const cli_map_request_t* cli_req, char** 
 			/* Now read our lovely new map file */
 			fd = open("map4client.map", O_RDONLY);
 
-			memset(*outputMap, 0, BSIZE);
-			n = read(fd, *outputMap, map_len);
+			memset(outputMap->map, 0, BSIZE);
+			n = read(fd, outputMap->map, map_len);
 			if (n < 0)
 				fatal("Error reading map");
 
@@ -240,7 +249,7 @@ int respond_to_map_request(int connfd, const cli_map_request_t* cli_req, char** 
 		}
 	}
 
-	strncat(&msg[str_len], *outputMap, map_len);
+	strncat(&msg[str_len], outputMap->map, map_len);
 	str_len += strlen(&msg[str_len]) + 1;
 
 	n = write(connfd, msg, str_len);
@@ -266,24 +275,36 @@ int respond_to_map_request(int connfd, const cli_map_request_t* cli_req, char** 
 	return 0;
 }
 
-int kill_map_char(cli_kill_request_t kill_req, char* map)
+int kill_map_char(cli_kill_request_t kill_req, map_data_t map)
 {
-	char* currentChar = map;
+	char* currentChar = map.map;
 	int count = 1;
+	if (map.map == NULL)
+	{
+		return -1;
+	}
+
 	while(*currentChar != '\n')
 	{
 		currentChar++;
 		count++;
 	}
 
-	map[kill_req.x + ((kill_req.y + 1) * count)] = ' ';
+	if (map.map[kill_req.x + (kill_req.y * count)] != kill_req.charToKill)
+		return -1;
+	else if (map.width < kill_req.x)
+		return -1;
+	else if (map.height < kill_req.y)
+		return -1;
 
-	printf("%s\n", map);
+	map.map[kill_req.x + (kill_req.y * count)] = ' ';
+	printf("%s\n", map.map);
+
+	return 0;
 }
 
 int main(void)
 {
-	char* map;
 	int sockfd;
 	int connfd;
 	socklen_t clilen;
@@ -330,6 +351,8 @@ int main(void)
 #ifdef _DEBUG
 				printf("Child, here!\n");
 #endif
+				map_data_t map;
+				map.map = NULL;
 				char cmd = 0;
 
 				int bGameOver = 0;
@@ -387,6 +410,10 @@ int main(void)
 #endif
 				logmsg("Closing connection.");
 				close(connfd);
+
+				/* free map */
+				free(map.map);
+				
 				exit(0);
 			}
 			else if (pid < 0)
@@ -401,7 +428,5 @@ int main(void)
 	/* Stop logging */
 	close(logfd);
 
-	/* free map */
-	free(map);
 
 }
