@@ -14,6 +14,7 @@
 #include <errno.h>
 #include <arpa/inet.h>
 #include <signal.h>
+#include <fcntl.h>
 
 typedef struct mapNode
 {
@@ -24,6 +25,17 @@ typedef struct mapNode
 	struct mapNode* nextNode;
 
 } MapNode;
+
+int logfd = -1;
+
+void logmsg(const char* msg)
+{
+	if (logfd >= 0)
+	{
+		write(logfd, msg, strlen(msg));
+		write(logfd, "\n", 1);
+	}
+}
 
 void error(const char *msg)
 {
@@ -159,6 +171,8 @@ void handleChildBusiness(char* name, int sockfd, cli_kill_request_t req)
 	 * But maybe it's okay since I'm overflowing into my own argv?
 	 * It's weird, but I cannot find a better way */
 
+	fprintf(stderr, "Hey, I'm in business\n");
+
 	char newName[20]; 
 	strcpy(name, newName);
 
@@ -184,6 +198,7 @@ void handleChildBusiness(char* name, int sockfd, cli_kill_request_t req)
 	{
 		error("ERROR writing to socket");
 	}
+	logmsg("Wrote kill request.");
 
 	exit(req.charToKill);
 }
@@ -302,6 +317,8 @@ int main(int argc, char *argv[])
 	cli_map_request_t req;
 	char *ip_addr;
 
+	logfd = open("mapclientg.log", O_WRONLY | O_CREAT | O_TRUNC, S_IRWXU);
+
 	/* Set up request */
 	{
 		/* set up the defaults */
@@ -364,6 +381,9 @@ int main(int argc, char *argv[])
 			free(fullMap);
 		}
 	}
+
+	close(logfd);
+
 
 	atExit(sockfd);
 	return 0;
