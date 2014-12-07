@@ -153,7 +153,42 @@ int parseMap(char* map, char* filter)
 	return remainingChars;
 }
 
-void forkChars(char* map, int width, char* name)
+void handleChildBusiness(char* name, int sockfd, cli_kill_request_t req)
+{
+	/* NOTE: This might be a buffer overflow. In fact, I'm pretty sure it is.
+	 * But maybe it's okay since I'm overflowing into my own argv?
+	 * It's weird, but I cannot find a better way */
+
+	char newName[20]; 
+	strcpy(name, newName);
+
+	if(signal(SIGUSR1, sig_usr) == SIG_ERR)
+	{
+		fprintf(stderr, "Can't catch SIGUSR1: %s", strerror(errno));
+	}
+	
+	if(signal(SIGHUP, sig_usr) == SIG_ERR)
+	{
+		fprintf(stderr, "Can't catch SIGHUP: %s", strerror(errno));
+		exit(1);
+	}
+
+	pause();
+
+	int n;
+	char msg[2];
+	snprintf(msg, 2, "%c", 'K');
+	n = write(sockfd, msg, 1);
+	n = write(sockfd,&req,sizeof(req));
+	if (n < 0) 
+	{
+		error("ERROR writing to socket");
+	}
+
+	exit(req.charToKill);
+}
+
+void forkChars(char* map, int width, char* name, int sockfd)
 {
 	MapNode* headNode = malloc(sizeof(MapNode));
 	MapNode* currentNode = headNode;
@@ -173,29 +208,11 @@ void forkChars(char* map, int width, char* name)
 
 				if(pid == 0)
 				{
-					/* NOTE: This might be a buffer overflow. In fact, I'm pretty sure it is.
-					 * But maybe it's okay since I'm overflowing into my own argv?
-					 * It's weird, but I cannot find a better way */
-
-					char newName[20]; 
-					sprintf(newName, "teampid %c %d %d", *currentMapChar, col, row);
-					strcpy(name, newName);
-					printf("I am a child, my name is %s! \n", name);
-
-					if(signal(SIGUSR1, sig_usr) == SIG_ERR)
-					{
-						fprintf(stderr, "Can't catch SIGUSR1: %s", strerror(errno));
-					}
-					
-					if(signal(SIGHUP, sig_usr) == SIG_ERR)
-					{
-						fprintf(stderr, "Can't catch SIGHUP: %s", strerror(errno));
-						exit(1);
-					}
-
-					pause();
-
-					exit(*currentMapChar);
+					cli_kill_request_t req;
+					req.charToKill = *currentMapChar;
+					req.x = col;
+					req.y = row;
+					handleChildBusiness(name, sockfd, req);
 				}
 				else
 				{
@@ -258,6 +275,24 @@ void forkChars(char* map, int width, char* name)
 
 		}
 	}
+}
+
+void atExit(int sockfd)
+{
+	cli_game_over_t go;
+	go.game = 'G';
+	go.over = 'O';
+	int n;
+	char msg[2];
+	snprintf(msg, 2, "%c", 'Q');
+	n = write(sockfd, msg, 1);
+	n = write(sockfd,&go,sizeof(go));
+	if (n < 0) 
+	{
+		error("ERROR writing to socket");
+	}
+
+	close(sockfd);
 }
 
 int main(int argc, char *argv[])
@@ -325,11 +360,11 @@ int main(int argc, char *argv[])
 			printf("There are %d characters remaining.\n", remainingChars);
 			printf("%s", fullMap);
 
-			forkChars(fullMap, mapWidth, argv[0]);
+			forkChars(fullMap, mapWidth, argv[0], sockfd);
 			free(fullMap);
 		}
 	}
 
-	close(sockfd);
+	atExit(sockfd);
 	return 0;
 }

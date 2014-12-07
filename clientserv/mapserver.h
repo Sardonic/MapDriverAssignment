@@ -7,6 +7,8 @@
 #define DEFAULT_IP "127.0.0.1"
 
 #define CLI_MAP_CHAR 'M'
+#define CLI_KILL_CHAR 'K'
+#define CLI_GAME_OVER_CHAR 'Q'
 #define SRV_ERR_CHAR "E"
 #define SRV_MAP_CHAR "M"
 
@@ -15,6 +17,19 @@ typedef struct cli_map_request
 	int width; /* Map width. Zero if we don't care about size */
 	int height; /* Map height */
 } cli_map_request_t;
+
+typedef struct cli_kill_request
+{
+	char charToKill;
+   	int x;
+	int y;
+} cli_kill_request_t;
+
+typedef struct cli_game_over
+{
+	char game;
+	char over;
+} cli_game_over_t;
 
 typedef struct srv_err_response_t
 {
