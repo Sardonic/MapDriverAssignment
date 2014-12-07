@@ -174,6 +174,7 @@ void handleChildBusiness(char* name, int sockfd, cli_kill_request_t req)
 	fprintf(stderr, "Hey, I'm in business\n");
 
 	char newName[20]; 
+	sprintf(newName, "teampid %c %d %d", req.charToKill, req.x, req.y);
 	strcpy(name, newName);
 
 	if(signal(SIGUSR1, sig_usr) == SIG_ERR)
