@@ -296,11 +296,10 @@ void forkChars(char* map, int width, char* name, int sockfd)
 void atExit(int sockfd)
 {
 	cli_game_over_t go;
-	go.game = 'G';
 	go.over = 'O';
 	int n;
 	char msg[2];
-	snprintf(msg, 2, "%c", 'Q');
+	snprintf(msg, 2, "%c", 'G');
 	n = write(sockfd, msg, 1);
 	n = write(sockfd,&go,sizeof(go));
 	if (n < 0) 
@@ -384,7 +383,6 @@ int main(int argc, char *argv[])
 	}
 
 	close(logfd);
-
 
 	atExit(sockfd);
 	return 0;

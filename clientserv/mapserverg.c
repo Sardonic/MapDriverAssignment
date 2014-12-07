@@ -97,7 +97,7 @@ int respond_err(int connfd, int err)
 	return 0;
 }
 
-int respond_to_map_request(int connfd, const cli_map_request_t* cli_req, char* outputMap)
+int respond_to_map_request(int connfd, const cli_map_request_t* cli_req, char** outputMap)
 {
 	int width,
 	    height;
@@ -128,12 +128,14 @@ int respond_to_map_request(int connfd, const cli_map_request_t* cli_req, char* o
 	map_resp.height = height;
 
 	int n;
-	outputMap = malloc(BSIZE);
+	*outputMap = malloc(BSIZE);
+	memset(*outputMap, 0, BSIZE);
+
 	int mapfd = open("/dev/asciimap", O_RDONLY);
 	if (mapfd < 0)
 		fatal("Error opening /dev/asciimap");
 
-	n = read(mapfd, outputMap, BSIZE);
+	n = read(mapfd, *outputMap, BSIZE);
 	if (n < 0)
 		fatal("Error reading /dev/asciimap");
 	close(mapfd);
@@ -164,7 +166,7 @@ int respond_to_map_request(int connfd, const cli_map_request_t* cli_req, char* o
 			fatal("Could not create tmp.map");
 
 		/* Write to the new file */
-		write(fd, outputMap, strlen(outputMap));
+		write(fd, *outputMap, strlen(*outputMap));
 
 		/* Close the file for someone else to use */
 		close(fd);
@@ -221,9 +223,11 @@ int respond_to_map_request(int connfd, const cli_map_request_t* cli_req, char* o
 			/* Now read our lovely new map file */
 			fd = open("map4client.map", O_RDONLY);
 
-			n = read(fd, outputMap, map_len);
+			memset(*outputMap, 0, BSIZE);
+			n = read(fd, *outputMap, map_len);
 			if (n < 0)
 				fatal("Error reading map");
+
 
 			close(fd);
 
@@ -236,7 +240,7 @@ int respond_to_map_request(int connfd, const cli_map_request_t* cli_req, char* o
 		}
 	}
 
-	strncat(&msg[str_len], outputMap, map_len);
+	strncat(&msg[str_len], *outputMap, map_len);
 	str_len += strlen(&msg[str_len]) + 1;
 
 	n = write(connfd, msg, str_len);
@@ -264,7 +268,17 @@ int respond_to_map_request(int connfd, const cli_map_request_t* cli_req, char* o
 
 int kill_map_char(cli_kill_request_t kill_req, char* map)
 {
-	return 0;
+	char* currentChar = map;
+	int count = 1;
+	while(*currentChar != '\n')
+	{
+		currentChar++;
+		count++;
+	}
+
+	map[kill_req.x + ((kill_req.y + 1) * count)] = ' ';
+
+	printf("%s\n", map);
 }
 
 int main(void)
@@ -337,7 +351,7 @@ int main(void)
 							n = read(connfd, &cli_req, sizeof(cli_req));
 							if (n < 0)
 								fatal(NULL);
-							respond_to_map_request(connfd, &cli_req, map);
+							respond_to_map_request(connfd, &cli_req, &map);
 							logmsg("Successfully responded to map request.");
 							shutdown(connfd, SHUT_WR);
 							logmsg("Shutdown write operation with client.");
@@ -351,8 +365,12 @@ int main(void)
 							if (n < 0)
 								fatal(NULL);
 							kill_map_char(cli_kill, map);
-							bGameOver = true;
 							logmsg("Successfully killed the character.");
+						}
+						break;
+					case 'G':
+						{
+							bGameOver = true;
 						}
 						break;
 					default:

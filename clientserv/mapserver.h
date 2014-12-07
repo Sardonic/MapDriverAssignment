@@ -8,7 +8,7 @@
 
 #define CLI_MAP_CHAR 'M'
 #define CLI_KILL_CHAR 'K'
-#define CLI_GAME_OVER_CHAR 'Q'
+#define CLI_GAME_OVER_CHAR 'G'
 #define SRV_ERR_CHAR "E"
 #define SRV_MAP_CHAR "M"
 
@@ -27,7 +27,6 @@ typedef struct cli_kill_request
 
 typedef struct cli_game_over
 {
-	char game;
 	char over;
 } cli_game_over_t;
 
