@@ -10,7 +10,7 @@
 #include <string.h>
 
 char* carveFile(char* fileName, int width, int height, int lineNum);
-void printArgUsage();
+void printArgUsage(void);
 
 int main(int argc, char* argv[])
 {
@@ -107,7 +107,7 @@ int main(int argc, char* argv[])
 char* carveFile(char* fileName, int width, int height, int lineNum)
 {
 	FILE* fileDesc;
-	char* mapLine;
+	char* mapLine = NULL;
 	if((fileDesc = fopen(fileName, "r")))
 	{
 
@@ -130,8 +130,8 @@ char* carveFile(char* fileName, int width, int height, int lineNum)
 		size_t len = 0;
 		ssize_t read;
 
-		int writeStart;
-		int writeEnd;
+		int writeStart = 0;
+		int writeEnd = 0;
 
 		int itr = 1; /* counts current row */
 		while((read = getline(&line, &len, fileDesc)) != -1 && itr <= height)

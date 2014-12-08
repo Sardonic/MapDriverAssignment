@@ -80,15 +80,50 @@ ask it to check its own consistency. All the ioctl constant declarations
 are in asciimap.h.
 
 Also in the folder is a genmap.sh file, which you can run anytime you want
-to generate a big map of random characters whenever you want. Patience --
-it can take several seconds to generate a valid random map.
+to generate a big map of random characters whenever you want. Args can be
+use to specify the desired dimensions of the map, with the first arg being
+width and the second being height. Patience -- it can take several seconds
+to generate a valid random map.
 
-TODO: David, can you cover this prgh for me? I don't know what I'm talking about.
-testForkExec is another executable make made for you. If you run this file,
-you'll get a crazy map! So that's nice.
+The testForkExec program gets built along with the driver and such, in the
+all target of the makefile. testForkExec either pulls a map from genmap or
+carves a map out of a file specified as an arg. Desired width and height
+can be specified using the -w and -h options, respectively.
 
 *Client / Server*: This is a bit more complex. In clientserv/, you'll find
+several executables:
+	* mapserver
+	* mapserverg
+	* mapclient
+	* mapclientg
 
+Simply run a server in one terminal (it doesn't take any options), and then
+in another terminal, run the corresponding client. I recommend the *g files
+ -- they're quite a bit more fun. The client automatically tries to connect
+to localhost, but you can point it at another ip with the -i option. You
+can also specify the width and height of the map the game will be played
+with with the -w and -h options. To play, get the server and client running,
+and then view your processes in another window. You can kill the child
+processes spawned by the client (each called something like tmpid * *),
+and the client and server will respond. Kill them all, and the game will end.
+
+*** NOTE ****
+When we made the server, we weren't sure if it should display the same map
+as the client, or the canonical map that was read from the driver. Since
+the client knew when the game was over, and we didn't think the server
+should show a map different from the map produced by the driver, we kept
+the server from filtering the map. This is why the server and client
+maps may look different.
+
+To test the game, follow the previous steps to start up the server and
+client, and then (in a different terminal) run
+$ make test
+
+And watch the fun commence! Every second the game will draw a bit closer
+to victory.
+
+The server and client spawn .log files as the game commences. You'll find
+them in the same directory as the server/client binaries.
 
 ===========================================================================
 3.0 Updates
@@ -111,28 +146,20 @@ _DEBUG statement. Must have something to do with the makefile.
 4.2 Client/Server
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-Client is very bossy. It tells the server what to do, but it does not
-listen for the server's response. Of course, this means it also does not
-report errors or print the map that it receives from the server.
+When we made the server, we weren't sure if it should display the same map
+as the client, or the canonical map that was read from the driver. Since
+the client knew when the game was over, and we didn't think the server
+should show a map different from the map produced by the driver, we kept
+the server from filtering the map. This is why the server and client
+maps may look different.
 
-Server has developed the habit of segfaulting on certain client requests.
-This seems to be related to the map size sent by the client.
-
-Server does not actually read from /dev/asciimap yet, instead making up
-its own map line.
-
-Server does not properly store the map, instead re-writing the same line
-to the beginning of the map over and over again.
-
-Server does not generate maps differently when it receives '0' from the
-client, although it does detect the '0' from the client and reports
-that it should react differently.
-
-Server does not write back to the client yet, instead printing to stdout
-for debugging purposes.
+For the client, renaming the child processes is a bit strange. They never
+overflow argv[0], but they don't abbreviate themselves if argv[0] is small.
+Therefore, if argv[0] is really small, the name will be illegible, and
+make test may fail to work.
 
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-4.2 Test C File (testForkExec.c)
+4.3 Test C File (testForkExec.c)
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 Currently it counts tabs as one char, causing the map to appear misaligned.

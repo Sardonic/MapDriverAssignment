@@ -24,7 +24,7 @@
 #define EINVALHEIGHT -5
 #define EINVALKILLCHAR -6
 
-#define LOG_FILENAME "mapserver.log"
+#define LOG_FILENAME "mapserverg.log"
 
 #define MAX_ERR_MSG_LEN 100
 

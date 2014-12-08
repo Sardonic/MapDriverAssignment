@@ -10,12 +10,14 @@ SHELL=/bin/bash
 # Where to look for header files
 INC=-I. -I/usr/include -I/usr/src/kernels/`uname -r`/include -D_DEBUG
 
+TFO_C=testForkExec.c
 DRIVER=asciimap.o
 MODULE=asciimap.ko
 
 obj-m += $(DRIVER)
 
 all: 
+	$(CC) $(CC_OPTIONS) $(TFO_C) -o testForkExec
 	DIR=$(PWD)
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
 	cd $(DIR)
