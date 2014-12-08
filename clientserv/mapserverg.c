@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <fcntl.h>
+#include <arpa/inet.h>
 
 #define MIN(a, b) (a < b ? a : b)
 
@@ -324,6 +325,7 @@ int main(void)
 {
 	int sockfd;
 	socklen_t clilen;
+	int port;
 	struct sockaddr_in serv_addr, cli_addr;
 	int n;
 
@@ -337,9 +339,10 @@ int main(void)
 		fatal(NULL);
 
 	memset(&serv_addr, 0, sizeof(serv_addr));
+	port = DEFAULT_PORT;
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	serv_addr.sin_port = htons(DEFAULT_PORT);
+	serv_addr.sin_port = htons(port);
 	if (bind(sockfd, (struct sockaddr *) &serv_addr,
 				sizeof(serv_addr)) < 0)
 		fatal(NULL);
@@ -417,7 +420,15 @@ int main(void)
 					case 'G':
 						{
 							bGameOver = true;
-							printf("Game Over for Client %d %s %d\n", connfd, DEFAULT_IP, DEFAULT_PORT);
+							printf(
+								"Game Over for Client fd: %d ip: %d.%d.%d.%d port: %d\n",
+								connfd,
+								cli_addr.sin_addr.s_addr & 0xFF,
+								(cli_addr.sin_addr.s_addr & 0xFF00)>>8,
+								(cli_addr.sin_addr.s_addr & 0xFF0000)>>16,
+								(cli_addr.sin_addr.s_addr & 0xFF000000)>>24,
+								port
+							      );
 							int mapfd = open("/dev/asciimap", O_RDONLY);
 							if (mapfd < 0)
 								fatal("Error opening /dev/asciimap");

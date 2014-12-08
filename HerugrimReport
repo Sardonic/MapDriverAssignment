@@ -8,14 +8,17 @@ Last Updated: 25/11/14     Version 1.1
 
 Table of Contents
 1.0 About
-2.0 Updates
-3.0 Known Bugs
-	3.1 Driver
-	3.2 Client/Server
-4.0 Components
-	4.1 Script
-	4.2 Driver
-	4.3 Client/Server
+2.0 Instructions
+	2.1 Build
+	2.2 Usage
+3.0 Updates
+4.0 Known Bugs
+	4.1 Driver
+	4.2 Client/Server
+5.0 Components
+	5.1 Script
+	5.2 Driver
+	5.3 Client/Server
 
 ===========================================================================
 1.0 About
@@ -29,24 +32,83 @@ client using sockets. As of this time, the third assignment is
 undetermined.
 
 ===========================================================================
-2.0 Updates
+2.0 Instructions
+===========================================================================
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+4.1 Build
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+*Driver*: To quickly build the driver, move to the root directory and run
+as superuser:
+# make build
+
+This will build and register the driver, and create a char device called
+/dev/asciimap
+
+For some additional features, like sending genmap.sh's output to the driver,
+you may want to turn on the write bits of the driver with a chmod.
+
+Testing the driver: To test the driver, after running make build, simply
+run
+$ ./test
+
+A map will be printed several times containing ascii art of three very
+handsome programmers, if all went according to plan. Basically, if it ran,
+everything is in good shape. Some of the output may look like it
+could have been an accidental failure, like "Read 0 bytes", but this is
+actually good! It's just testing the driver under various conditions. As
+long as only *some* of your output looks like that and not *all* of it,
+everything is swell. The map should have printed in full exactly twice.
+
+*Client / Server*: For the server stuff, just cd into clientserv/ and run
+$ make
+
+(No need to be root, this time)
+
+Then, if you want to test, keep reading. It's a bit more complicated than
+just running make test, this time (although not much more complicated!)
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+4.1 Usage
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+*Driver*: You can read from and write to the driver as you would any other
+file. There are some neat things you can do with ioctl, too. You can
+reset the map back to it's initial state, zero it out completely, or
+ask it to check its own consistency. All the ioctl constant declarations
+are in asciimap.h.
+
+Also in the folder is a genmap.sh file, which you can run anytime you want
+to generate a big map of random characters whenever you want. Patience --
+it can take several seconds to generate a valid random map.
+
+TODO: David, can you cover this prgh for me? I don't know what I'm talking about.
+testForkExec is another executable make made for you. If you run this file,
+you'll get a crazy map! So that's nice.
+
+*Client / Server*: This is a bit more complex. In clientserv/, you'll find
+
+
+===========================================================================
+3.0 Updates
 ===========================================================================
 
 19/11/14 First version of the report. Much to do. Much to write.
 25/11/14 Updated information on some of the components and the known bugs. 
 
 ===========================================================================
-3.0 Known Bugs
+4.0 Known Bugs
 ===========================================================================
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-3.1 Driver
+4.1 Driver
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 The driver does not call printk() if the prink() is surrounded by an #ifdef
 _DEBUG statement. Must have something to do with the makefile.
 
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-3.2 Client/Server
+4.2 Client/Server
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 Client is very bossy. It tells the server what to do, but it does not
@@ -70,7 +132,7 @@ Server does not write back to the client yet, instead printing to stdout
 for debugging purposes.
 
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-3.2 Test C File (testForkExec.c)
+4.2 Test C File (testForkExec.c)
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 Currently it counts tabs as one char, causing the map to appear misaligned.
@@ -83,10 +145,10 @@ space are now turned into spaces, this was the easiest solution that looks
 decent.
 
 ===========================================================================
-4.0 Components
+5.0 Components
 ===========================================================================
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-4.1 Script
+5.1 Script
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 The first part of the project is to write a script file called genmap.sh.
@@ -101,7 +163,7 @@ The script pulls bytes from /dev/urandom to be used in the map,
 then pipes them into base64 to remove bad characters.
 
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-4.2 Driver
+5.2 Driver
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 Driver does what driver does. This is a character device driver. It is used 
@@ -112,7 +174,7 @@ the teams initials. The driver also has a few ioctl() commands to reset the
 map to the static, zero out the map, and checking the map for consistency. 
 
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-4.3 Client/Server
+5.3 Client/Server
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 The Client sends a request to the server asking for a map with out without
@@ -121,7 +183,7 @@ and generates a map based on the restrictions given. It then returns the
 map or an error to the client.
 
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-4.3 Test C Program (testForkExec.c)
+5.3 Test C Program (testForkExec.c)
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 The test program can either fork/exec genmap.sh, or carve maps out of

@@ -86,7 +86,6 @@ int main(int argc, char* argv[])
 	}
 
 	err = ioctl(fid, IOCTL_CHECK_CONSISTENCY);
-	printf("did we dsucced %d\n", err);
 	
 	readAndPrintBuffer(fid, buffer, BUFFSIZE);
 

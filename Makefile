@@ -40,6 +40,10 @@ rebuild:
 	make register
 	eval `dmesg | grep mknod | tail -1`
 	
+test:
+	gcc -g test.c -o test
+	./test
+
 retest:
 	make rebuild
 	gcc -g test.c -o test

@@ -51,7 +51,7 @@ function genMap {
 	echo -n "$MAP_STR"
 }
 
-echo "One moment, generating map..."
+#echo "One moment, generating map..."
 MAP_STR=$(genMap)
 REAL_CHARS=$(echo -n $MAP_STR | tr -cd ' ' | wc -c)
 MIN_CHARS=$(( ($MAP_HEIGHT * $MAP_WIDTH) / 4))

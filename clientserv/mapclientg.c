@@ -322,18 +322,7 @@ void forkChars(char* map, int width, char* name, int sockfd)
 
 void atExit()
 {
-	cli_game_over_t go;
-	go.over = 'O';
-	int n;
-	char msg[2];
-	snprintf(msg, 2, "%c", 'G');
-	n = write(sockfd, msg, 1);
-	n = write(sockfd,&go,sizeof(go));
-	if (n < 0) 
-	{
-		error("ERROR writing to socket");
-	}
-
+	close(logfd);
 	close(sockfd);
 }
 
@@ -347,9 +336,6 @@ int main(int argc, char *argv[])
 	logfd = open("mapclientg.log", O_WRONLY | O_CREAT | O_TRUNC, S_IRWXU);
 	
 	atexit(atExit);
-
-	/* Kill all children when we die */
-	//prctl(PR_SET_PDEATHSIG, SIGHUP);
 
 	/* Set up request */
 	{
@@ -403,7 +389,7 @@ int main(int argc, char *argv[])
 		char* fullMap = retrieveMap(sockfd, &mapWidth, &mapHeight);
 		if(fullMap != NULL)
 		{
-			char* initialsFilter = "SABJDK";
+			char* initialsFilter = "SABJDKVTLRFHCP";
 			int remainingChars = parseMap(fullMap, initialsFilter);
 
 			printf("There are %d characters remaining.\n", remainingChars);
@@ -414,7 +400,18 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	close(logfd);
+	cli_game_over_t go;
+	go.over = 'O';
+	int n;
+	char msg[2];
+	snprintf(msg, 2, "%c", 'G');
+	n = write(sockfd, msg, 1);
+	n = write(sockfd,&go,sizeof(go));
+	if (n < 0) 
+	{
+		error("ERROR writing to socket");
+	}
+
 
 	return 0;
 }
