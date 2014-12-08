@@ -44,5 +44,8 @@ kill:
 kill-client:
 	kill `ps -ef | grep tmpid | grep -v grep | awk '{print $$2}'`
 
+test:
+	for i in `pgrep -f tmpid`; do kill $$i; sleep 1; done;
+
 clean:
 	rm -f $(SERV_EXE) $(CLI_EXE) $(TEST_FORK_EXE)

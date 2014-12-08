@@ -28,6 +28,8 @@ typedef struct mapNode
 
 } MapNode;
 
+void atExit(void);
+
 MapNode* headNode = NULL;
 int sockfd = -1;
 
@@ -50,22 +52,22 @@ void error(const char *msg)
 
 static void sig_hup(int signo)
 {
-	if (signo == SIGHUP)
+	if (signo != -1)
 	{
 		MapNode* currentNode = headNode;
-		MapNode** pp = &currentNode;
+		MapNode* prevNode = NULL;
 
 		while (currentNode != NULL)
 		{
+			prevNode = currentNode;
 			currentNode = currentNode->nextNode;
 
-			kill((*pp)->pid, SIGHUP);
+			kill(prevNode->pid, SIGHUP);
 
-			free(*pp);
-			*pp = NULL;
-			pp = &currentNode;
+			free(prevNode);
 		}
 	}
+	exit(0);
 }
 
 static void sig_usr(int signo)
@@ -205,14 +207,6 @@ void handleChildBusiness(char* name, int sockfd, cli_kill_request_t req)
 		fprintf(stderr, "Can't catch SIGUSR1: %s", strerror(errno));
 	}
 
-	/*
-	if (sigaction(SIGHUP, &act, NULL) == -1)
-	{
-		fprintf(stderr, "Can't catch SIGHUP: %s", strerror(errno));
-		exit(1);
-	}
-	*/
-
 	pause();
 
 	int n;
@@ -231,9 +225,9 @@ void handleChildBusiness(char* name, int sockfd, cli_kill_request_t req)
 
 void forkChars(char* map, int width, char* name, int sockfd)
 {
-	MapNode* headNode = malloc(sizeof(MapNode));
-	MapNode* currentNode = headNode;
-	currentNode->nextNode = NULL;
+	headNode = NULL;
+	MapNode* currentNode;
+	MapNode** pp = &headNode;
 
 	char* currentMapChar = map;
 	int row = 0;
@@ -256,13 +250,13 @@ void forkChars(char* map, int width, char* name, int sockfd)
 				}
 				else
 				{
-					currentNode->pid = pid;
-					currentNode->character = *currentMapChar;
-					currentNode->x = col;
-					currentNode->y = row;
-					currentNode->nextNode = malloc(sizeof(MapNode));
-					currentNode = currentNode->nextNode;
-					currentNode->nextNode = NULL;
+					*pp = malloc(sizeof(MapNode));
+					(*pp)->nextNode = NULL;
+					(*pp)->pid = pid;
+					(*pp)->character = *currentMapChar;
+					(*pp)->x = col;
+					(*pp)->y = row;
+					pp = &((*pp)->nextNode);
 				}
 			}
 
@@ -280,8 +274,9 @@ void forkChars(char* map, int width, char* name, int sockfd)
 		struct sigaction act;
 		act.sa_handler = sig_hup;
 		sigaction(SIGHUP, &act, NULL);
+		sigaction(SIGINT, &act, NULL);
+		sigaction(SIGTERM, &act, NULL);
 	}
-
 
 	pid_t n = 0;
 	while((n = wait(NULL)) > 0) /* only the parent gets here */
@@ -351,7 +346,6 @@ int main(int argc, char *argv[])
 
 	logfd = open("mapclientg.log", O_WRONLY | O_CREAT | O_TRUNC, S_IRWXU);
 	
-	/* Set exit logic */
 	atexit(atExit);
 
 	/* Kill all children when we die */
