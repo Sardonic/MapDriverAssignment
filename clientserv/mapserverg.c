@@ -6,6 +6,7 @@
 #include <sys/stat.h>
 #include <sys/socket.h>
 #include <sys/wait.h>
+#include <sys/ioctl.h>
 #include <netinet/in.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -40,6 +41,14 @@ typedef struct map_data_t {
 	int width;
 	int height;
 } map_data_t;
+
+int connfd = -1;
+
+void atExit(void)
+{
+	if (connfd >= 0)
+		close(connfd);
+}
 
 void logmsg(const char* msg)
 {
@@ -173,7 +182,7 @@ int respond_to_map_request(int connfd, const cli_map_request_t* cli_req, map_dat
 	memcpy(&msg[str_len], &map_resp, sizeof(map_resp));
 	str_len += sizeof(map_resp);
 
-	map_len = MIN(MSGLEN - str_len - 1, (width + 1) * height);
+	map_len = MIN((unsigned)(MSGLEN - str_len - 1), (unsigned)((width + 1) * height));
 
 	/* Cut up the lines until they're the correct width */
 	{
@@ -314,10 +323,11 @@ int kill_map_char(cli_kill_request_t kill_req, map_data_t map)
 int main(void)
 {
 	int sockfd;
-	int connfd;
 	socklen_t clilen;
 	struct sockaddr_in serv_addr, cli_addr;
 	int n;
+
+	atexit(atExit);
 
 	/* init logging */
 	logfd = open(LOG_FILENAME, O_TRUNC | O_CREAT | O_WRONLY, S_IRWXU); 
@@ -408,8 +418,12 @@ int main(void)
 						{
 							bGameOver = true;
 							printf("Game Over for Client %d %s %d\n", connfd, DEFAULT_IP, DEFAULT_PORT);
-							/* TODO: mapfd needs to be in scope :/ */
-							//ioctl(mapfd, IOCTL_RESET_MAP);
+							int mapfd = open("/dev/asciimap", O_RDONLY);
+							if (mapfd < 0)
+								fatal("Error opening /dev/asciimap");
+
+							ioctl(mapfd, IOCTL_RESET_MAP);
+							logmsg("Sent ioctl reset request to /dev/asciimap.");
 						}
 						break;
 					default:

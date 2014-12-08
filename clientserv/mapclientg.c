@@ -15,6 +15,8 @@
 #include <arpa/inet.h>
 #include <signal.h>
 #include <fcntl.h>
+#include <sys/prctl.h>
+#include <sys/wait.h>
 
 typedef struct mapNode
 {
@@ -25,6 +27,9 @@ typedef struct mapNode
 	struct mapNode* nextNode;
 
 } MapNode;
+
+MapNode* headNode = NULL;
+int sockfd = -1;
 
 int logfd = -1;
 
@@ -41,6 +46,26 @@ void error(const char *msg)
 {
 	perror(msg);
 	exit(0);
+}
+
+static void sig_hup(int signo)
+{
+	if (signo == SIGHUP)
+	{
+		MapNode* currentNode = headNode;
+		MapNode** pp = &currentNode;
+
+		while (currentNode != NULL)
+		{
+			currentNode = currentNode->nextNode;
+
+			kill((*pp)->pid, SIGHUP);
+
+			free(*pp);
+			*pp = NULL;
+			pp = &currentNode;
+		}
+	}
 }
 
 static void sig_usr(int signo)
@@ -166,26 +191,27 @@ int parseMap(char* map, char* filter)
 
 void handleChildBusiness(char* name, int sockfd, cli_kill_request_t req)
 {
-	/* NOTE: This might be a buffer overflow. In fact, I'm pretty sure it is.
-	 * But maybe it's okay since I'm overflowing into my own argv?
-	 * It's weird, but I cannot find a better way */
+	int namelen = strlen(name);
+	char newName[namelen];
 
-	fprintf(stderr, "Hey, I'm in business\n");
+	snprintf(newName, namelen, "tmpid %c %d %d", req.charToKill, req.x, req.y);
+	strncpy(name, newName, namelen);
 
-	char newName[20]; 
-	sprintf(newName, "teampid %c %d %d", req.charToKill, req.x, req.y);
-	strcpy(name, newName);
+	struct sigaction act;
+	act.sa_handler = sig_usr;
 
-	if(signal(SIGUSR1, sig_usr) == SIG_ERR)
+	if (sigaction(SIGUSR1, &act, NULL) == -1)
 	{
 		fprintf(stderr, "Can't catch SIGUSR1: %s", strerror(errno));
 	}
-	
-	if(signal(SIGHUP, sig_usr) == SIG_ERR)
+
+	/*
+	if (sigaction(SIGHUP, &act, NULL) == -1)
 	{
 		fprintf(stderr, "Can't catch SIGHUP: %s", strerror(errno));
 		exit(1);
 	}
+	*/
 
 	pause();
 
@@ -209,7 +235,6 @@ void forkChars(char* map, int width, char* name, int sockfd)
 	MapNode* currentNode = headNode;
 	currentNode->nextNode = NULL;
 
-	int nameLength = 20;
 	char* currentMapChar = map;
 	int row = 0;
 	int col = 0;
@@ -249,6 +274,14 @@ void forkChars(char* map, int width, char* name, int sockfd)
 		row++;
 		col = 0;
 	}
+
+	/* Reap kids when we die */
+	{
+		struct sigaction act;
+		act.sa_handler = sig_hup;
+		sigaction(SIGHUP, &act, NULL);
+	}
+
 
 	pid_t n = 0;
 	while((n = wait(NULL)) > 0) /* only the parent gets here */
@@ -292,7 +325,7 @@ void forkChars(char* map, int width, char* name, int sockfd)
 	}
 }
 
-void atExit(int sockfd)
+void atExit()
 {
 	cli_game_over_t go;
 	go.over = 'O';
@@ -311,12 +344,18 @@ void atExit(int sockfd)
 
 int main(int argc, char *argv[])
 {
-	int sockfd, portno, n;
+	int portno;
 	struct sockaddr_in serv_addr;
 	cli_map_request_t req;
 	char *ip_addr;
 
 	logfd = open("mapclientg.log", O_WRONLY | O_CREAT | O_TRUNC, S_IRWXU);
+	
+	/* Set exit logic */
+	atexit(atExit);
+
+	/* Kill all children when we die */
+	//prctl(PR_SET_PDEATHSIG, SIGHUP);
 
 	/* Set up request */
 	{
@@ -383,6 +422,5 @@ int main(int argc, char *argv[])
 
 	close(logfd);
 
-	atExit(sockfd);
 	return 0;
 }
